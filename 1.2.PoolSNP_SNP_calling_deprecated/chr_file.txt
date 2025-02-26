@@ -1,0 +1,6 @@
+chr2L
+chr2R
+chr3
+chr4
+chrX
+chrY

@@ -42,3 +42,7 @@ $fastp \
 
 #rm ${QUERY_NAME}.json
 #rm $dir_data/${QUERY_NAME}.fq_1.gz $dir_data/${QUERY_NAME}.fq_2.gz
+
+
+
+
