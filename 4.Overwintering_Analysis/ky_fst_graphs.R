@@ -8,10 +8,14 @@ library(data.table)
 library(reshape2)
 library(poolfstat)
 library(FactoMineR)
-require(gtools)
 require(foreach)
-library(ggpmisc)
-library(gt)
+
+#require(gtools)
+#library(ggpmisc)
+#library(gt)
+
+load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/fst.matrix.meta.ky.Rdata")
+load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/fst.matrix.meta.kyva.Rdata")
 
 ##################################################################################
 ################################################################################## 
@@ -21,54 +25,53 @@ library(gt)
 ### Figure a ###
 ##################################################################################
 		   
-fst_slope.ky <- fast_matrix.meta.ky  %>%
-# mutate(same_city = city1==city2,
-#		same_fruit = fruit1==fruit2,
-#		fruit_comp = paste(fruit1, fruit2, sep="_")) %>%
+fst_slope.ky <- 
+  fast_matrix.meta.ky  %>%
   ggplot(aes(
     x=delta,
     y=(fst)
   )) + 
-  geom_point() +
+  geom_point(shape = 21, fill = "grey", size = 1.8) +
   geom_smooth(method = "lm") +
-  labs(
-	title = "a.) Fst Slope Over Time",
-	x = "Difference in Days between Pairwise Samples") + 
-  ylab(bquote(F[ST])) +
-	stat_poly_eq(formula = my.formula, 
-		   aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-		   parse = TRUE)
+  theme_bw()
   
-ggsave(fst_slope.ky, file = "fst_slope_ky.pdf", w = 6, h = 5)
-ggsave(fst_slope.ky, file = "fst_slope_ky.png", w = 6, h = 5)		   
+ggsave(fst_slope.ky, 
+       file = "fst_slope_ky.pdf", w = 6, h = 5)
+#ggsave(fst_slope.ky, file = "fst_slope_ky.png", w = 6, h = 5)		   
+
+lm(fst ~ delta, data = fast_matrix.meta.ky) %>% anova
 
 ##################################################################################
 ### Figure b ###
 ##################################################################################
      
-fst.box.ky <- fast_matrix.meta.ky %>%
+ fast_matrix.meta.ky %>%
   mutate(samey = year2==year1) |> mutate(
-  samey = if_else(condition = samey == "TRUE", true = "Within Growing Season", false = "Overwinter"))%>%
+  samey = if_else(condition = samey == "TRUE",
+                  true = "Within Growing Season", 
+                  false = "Overwinter")) -> dat_ow
+
+fst.box.ky <- dat_ow%>%
     ggplot(aes(
     x=samey,
     y=fst )) + geom_boxplot() + labs(
-	x = NULL) + 
-	ggtitle(expression("b.) F"[ST]~" of Within Season vs Overwintering Populations")) +
-	ylab(bquote(F[ST]))
+	x = NULL) 
 	
+wilcox.test(fst~samey, data = dat_ow)
 	
 	ggsave(fst.box.ky, file = "fst.box_ky.pdf",
 		   w= 6, h = 5)
-	ggsave(fst.box.ky, file = "fst.box_ky.png",
-		   w= 6, h = 5)		   
-		   
+	#ggsave(fst.box.ky, file = "fst.box_ky.png",
+	#	   w= 6, h = 5)		   
+	#	   
 ##################################################################################	   
 ### Figure c ###
 ##################################################################################
 
 fst.box.kyva <- fast_matrix.meta.kyva |> filter(
 	states != "Virginia") |> mutate(
-  states = if_else(condition = states == "Kentucky", true = "Within Kentucky", false = "Between Kentucky and Virginia")) |>
+  states = if_else(condition = states == "Kentucky", 
+                   true = "Within Kentucky", false = "Between Kentucky and Virginia")) |>
     ggplot(aes(
     x=states,
     y=fst
