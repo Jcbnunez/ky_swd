@@ -1,0 +1,54 @@
+sampleId_orig,lat,long,continent,country,city,province,Collection_date,fruit_type,nFlies,nmales,fly_type,sampling_strategy,seq_platform,Range,SRA_Accession,reference
+BR-Pal,-27.72,-52.17,South_America,Brazil,Porto Alegre,Brazil,2014-07,NA,50,33,wild,trap,HS2500(PE125),Invasive_AME,SRR10260033,Olazcuaga et al. (2020)
+CN-Bei,40,116.35,Asia,China,Beijing,Beijing,2014-06,NA,50,11,wild,trap,HS2500(PE125),NAT,SRR10260017,Olazcuaga et al. (2020)
+CN-Lia,42.96,125.09,Asia,China,Liaoyuan city,Jilin,2014-08,NA,50,40,wild,trap,HS2500(PE125),NAT,SRR10260016,Olazcuaga et al. (2020)
+CN-Shi,23.7,102.48,Asia,China,Shiping,Yunnan,2014-06;08,NA,50,47,wild,trap,HS2500(PE125),NAT,SRR10260024,Olazcuaga et al. (2020)
+DE-Dos,49.45,8.66,Europe,Germany,Dossenheim,Baden-Wurttemberg,2015-08,NA,50,42,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260021,Olazcuaga et al. (2020)
+ES-Bar,41.36,1.96,Europe,Spain,Barcelona,Catalonia,2014-07,NA,50,50,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260019,Olazcuaga et al. (2020)
+FR-Cor,42.35,9,Europe,France,Lozzi,Corsica,2016-08,NA,50,25,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260018,Olazcuaga et al. (2020)
+FR-Lez,43.7,3.83,Europe,France,Montpellier,Occitania,2014-07,NA,100,50,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260015,Olazcuaga et al. (2020)
+FR-Par,48.84,2.36,Europe,France,Paris,Ile-de-France,2016-11,NA,100,50,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260014,Olazcuaga et al. (2020)
+FR-Run,-21.15,55.64,Africa,France,La Réunion Island,Saint-Denis,2016-09,NA,100,50,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260013,Olazcuaga et al. (2020)
+IT-Tre,46.04,11.15,Europe,Italy,Trento,Trentino,2014-09,NA,100,60,wild,trap,HS2500(PE125),Invasive_EUR,SRR10260034,Olazcuaga et al. (2020)
+JP-Kan,36.5,136.6,Asia,Japan,Kanazawa,Ishikawa,2019-10,NA,212,183,wild,trap,NS6000(PE150),NAT,SRR24598921,Feng et al. (2024)
+JP-Sap2,43.11,141.24,Asia,Japan,Sapporo,NA,2019-08-XX,NA,151,127,wild,trap,NS6000(PE150),NAT,SRR24598920,Feng et al. (2024)
+JP-Sap,43.05,141.35,Asia,Japan,Sapporo,Hokkaido,2014-07;2016-09,NA,50,46,wild,trap,HS2500(PE125),NAT,SRR10260023,Olazcuaga et al. (2020)
+JP-Tok,35.64,139.37,Asia,Japan,Tokyo,Kanto,2016-06,NA,50,10,wild,trap,HS2500(PE125),NAT,SRR10260022,Olazcuaga et al. (2020)
+KY10,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2021-08-25,Pokeweed,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY11,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2020-07-17,Blackberry,26,13,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY12,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2020-08-26,Pokeweed,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY13,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2020-09-09,Raspberry,20,10,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY14,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2020-10-17,Pokeweed/Raspberry,20,10,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY15,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2022-07-26,Blackberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY16,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2022-09-06,Pokeweed,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY17,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2022-10-16,Pokeweed,20,10,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY18,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2022-07-26,Blackberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY19,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2022-09-09,Raspberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY1,37.5683,-84.2867,North_America,USA,Lexington,Kentucky,2023-07-19,Blackberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY20,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2023-07-21,Blackberry,40,20,F4,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY2,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2023-08-21,Raspberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY3,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2023-10-03,Pokeweed/Raspberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY4,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2023-07-21,Blackberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY5,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2023-10-05,Pokeweed,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY6,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2021-07-24,Blackberry,20,10,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY7,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2021-09-05,Raspberry,40,20,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY8,37.9731,-84.5378,North_America,USA,Lexington,Kentucky,2021-11-05,Pokeweed,32,16,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+KY9,37.5683,-84.2867,North_America,USA,Berea,Kentucky,2021-07-14,Blackberry,22,11,wild,Fruit sample,G4,Invasive_AME,TBD,TBD
+AR-Gol,-42.02,-71.52,South_America,Argentina,Golondrinas,Chabut,2023-02,NA,100,100,wild,trap,NS6000(PE150),Invasive_AME,SRR29639537,Camus et al. (2024)
+CH-Del,47.37,7.35,Europe,Switzerland,Delemont,Jura,2014-10,NA,58,30,wild,trap,NS6000(PE250),Invasive_EUR,SRR26544765,Camus et al. (2024)
+DE-Jen,50.93,11.56,Europe,Germany,Jena,Thuringia,2016-09,NA,100,0,wild,trap,NS6000(PE250),Invasive_EUR,SRR29639538,Camus et al. (2024)
+RS-Zaj,44.45,19.25,Europe,Serbia,Zaja ca,Loznica,2020-09,NA,100,100,wild,trap,NS6000(PE250),Invasive_EUR,SRR26544764,Camus et al. (2024)
+PT-CP21,41.054,-8.28,Europe,Portugal,Castelo de Paiva,NA,2021-09-XX,NA,80,40,wild,trap,NA,Invasive_EUR,SRR28145941,Sario et al. (2024)
+US-CAOx,34.15,-119.13,North_America,USA,Oxnard,California,2018-11,NA,100,0,wild,trap,NS6000(PE150),Invasive_AME,SRR24598919,Feng et al. (2024)
+US-Col,40.57,-105.09,North_America,USA,Fort Collins,Colorado,2015-09,NA,50,26,wild,trap,HS2500(PE125),Invasive_AME,SRR10260032,Olazcuaga et al. (2020)
+US-Haw,19.67,-155.47,North_America,USA,Hilo,Hawaii,2016-06,NA,50,25,wild,trap,HS2500(PE125),Invasive_AME,SRR10260031,Olazcuaga et al. (2020)
+US-Nca,35.7,-80.62,North_America,USA,Raleigh,North Carolina,2016-10,NA,100,50,wild,trap,HS2500(PE125),Invasive_AME,SRR10260030,Olazcuaga et al. (2020)
+US-Sdi,32.72,-117.16,North_America,USA,San Diego,California,2014-05,NA,50,32,wild,trap,HS2500(PE125),Invasive_AME,SRR10260029,Olazcuaga et al. (2020)
+US-Sok,45.22,-123.07,North_America,USA,Dayton,Oregon,2014-10,NA,75,55,wild,trap,HS2500(PE125),Invasive_AME,SRR10260028,Olazcuaga et al. (2020)
+US-Vir17-VA1,37.99,-78.47,North_America,USA,Charlottesville,Virginia,2017-07-20,FieldCollected (Peach/Apple),36,11,wild,trap,NS6000(PE150),Invasive_AME,SRR14476475,TBD
+US-Vir17-VA2,37.99,-78.47,North_America,USA,Charlottesville,Virginia,2017-09-28,FieldCollected (Peach/Apple),37,24,wild,trap,NS6000(PE150),Invasive_AME,SRR14476474,TBD
+US-Vir18-VA3,37.99,-78.47,North_America,USA,Charlottesville,Virginia,2018-07-19,FieldCollected (Peach/Apple),32,16,wild,trap,NS6000(PE150),Invasive_AME,SRR14476473,TBD
+US-Vir18-VA4,37.99,-78.47,North_America,USA,Charlottesville,Virginia,2018-09-06,FieldCollected (Peach/Apple),46,40,wild,trap,NS6000(PE150),Invasive_AME,SRR14476472,TBD
+US-Wat,36.9,-121.75,North_America,USA,Watsonville,California,2014-10,NA,50,46,wild,trap,HS2500(PE125),Invasive_AME,SRR10260026,Olazcuaga et al. (2020)
+US-Wis2,42.91,-89.44,North_America,USA,Oregon,Wisconsin,2018-06-XX::2018-08-XX,NA,109,0,wild,trap,NS6000(PE150),Invasive_AME,SRR24598918,Feng et al. (2024)
+US-Wis,42.97,-89.69,North_America,USA,Barneveld,Wisconsin,2016-11,NA,75,30,wild,trap,HS2500(PE125),Invasive_AME,SRR10260025,Olazcuaga et al. (2020)

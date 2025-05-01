@@ -10,8 +10,8 @@ library(poolfstat)
 library(FactoMineR)
 require(gtools)
 require(foreach)
-library(ggpmisc)
-library(gt)
+#library(ggpmisc)
+#library(gt)
 
 ##################################################################################
 ######################
@@ -24,8 +24,70 @@ samps <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/202
 dat_f <- "/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/2024_Joaquin_KY/auto.pooldata.new.rds"    
 auto_dat <- readRDS(dat_f)
 
+
+#### Global PCA
 sample.names <- auto_dat@poolnames
 exclude <- c("KY20")
+
+
+all.set <-
+  pooldata.subset(
+    auto_dat,
+    pool.index = which(sample.names != exclude),
+    min.cov.per.pool = 10,
+    max.cov.per.pool = 150,
+    min.maf = 0.05,
+    return.snp.idx = TRUE,
+    verbose = TRUE
+  )
+
+all.pca =
+  randomallele.pca(
+    all.set,
+    scale = FALSE
+  )
+
+all.pca$pop.loadings %>%
+  as.data.frame() %>%
+  mutate(sampleId_orig = rownames(.)) %>%
+  left_join(samps)-> pca.all
+
+save(pca.all, file = "pca.all.Rdata")
+
+### N_Ame PCA
+samps %>% 
+  filter(continent == "North_America") %>%
+  filter(!sampleId_orig %in% c("KY20","KY17", "KY11")) %>%
+  .$sampleId_orig -> keep_NAM
+
+Name.set <-
+  pooldata.subset(
+    auto_dat,
+    pool.index = which(sample.names %in% keep_NAM),
+    min.cov.per.pool = 10,
+    max.cov.per.pool = 150,
+    min.maf = 0.05,
+    return.snp.idx = TRUE,
+    verbose = TRUE
+  )
+
+Name.pca =
+  randomallele.pca(
+    Name.set,
+    scale = FALSE
+  )
+
+Name.pca$pop.loadings %>%
+  as.data.frame() %>%
+  mutate(sampleId_orig = rownames(.)) %>%
+  left_join(samps)-> pca.Name
+
+save(pca.Name, file = "pca.Name.Rdata")
+
+
+#####
+sample.names <- auto_dat@poolnames
+exclude <- c("KY20","KY17", "KY11")
 
 ky.tag <- grep("KY", sample.names)
 va.tag <- grep("VA", sample.names)

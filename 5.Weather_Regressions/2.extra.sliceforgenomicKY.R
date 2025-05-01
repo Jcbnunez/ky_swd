@@ -1,10 +1,5 @@
-# Miles Garvin
-# Feb 28 2025
-## SWD Weather Manipulation Script
-############################
-#KY Weather slicing!!
+#KY Weather slicing for Genomic samples!!
 #Feb 28 2025
-
 
 ### libraries
 library(tidyverse)
@@ -14,30 +9,37 @@ library(foreach)
 library(nasapower)
 library(sp)
 library(lubridate)
-library(doMC)
 library(magrittr)
 library(readr)
 
+weather.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/KYWeatherData.mgarvin.Jan25.csv")
+weather.data %<>%
+  mutate(date = as.Date(paste(YEAR,MO,DY, sep = "-"),
+                        format = "%Y-%m-%d"))
 
-## Functions
+meta <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/MASTER_SWD_METADATA-METADATA_v2_MG.csv")
+meta %>%
+  filter(province == "Kentucky") ->
+  meta.ky
+
 calc_stat <- function(variable, window, sample, statistic) {
   #variable=combo$var[1];window=combo$win[1];sample=combo$samp[1];statistic=combo$stat[1]
-
+  
   #a lil sanity check
   cat("variable:", variable, "\n")
   cat("window:", toString(window), "\n")  # Convert list to a string
   cat("sample:", sample, "\n")
   cat("statistic:", statistic, "\n")
-
+  
   cat("Processing Samples", "\n")
   # Extract the sample row from KYsamples for the given sample id
-  sample_row <- KYsamples[KYsamples$sampleId_orig == sample, ]
+  sample_row <- meta.ky[meta.ky$sampleId_orig == sample, ]
   if (nrow(sample_row) == 0) {
     stop(paste("Sample", sample, "not found in KYsamples"))
   }
   cat("Processing Dates", "\n")
   # Convert the Collection_date to a Date object (assuming format "YEAR-MO-DY")
-  collection_date <- as.Date(sample_row$Date, format="%m/%d/%Y")
+  collection_date <- as.Date(sample_row$Collection_date, format="%Y-%m-%d")
   
   # Define window boundaries:
   # Assuming window[1] is the offset for the end of the window (0 days before = collection day)
@@ -70,31 +72,31 @@ calc_stat <- function(variable, window, sample, statistic) {
   
   if (variable == "T2M"){
     if (statistic == "prop. min") {
-    # Group the data by date and compute the daily minimum for the specified variable
+      # Group the data by date and compute the daily minimum for the specified variable
       daily_min <- aggregate(window_data[[variable]], 
-                           by = list(date = window_data$date), 
-                           FUN = min, na.rm = TRUE)
-    # Count the number of days where the minimum is below 5 degrees and divide by total days
+                             by = list(date = window_data$date), 
+                             FUN = min, na.rm = TRUE)
+      # Count the number of days where the minimum is below 5 degrees and divide by total days
       calc_value <- (sum(daily_min$x < 5)) / abs(window_vec[1] - window_vec[2])
-  }
-  
+    }
+    
     if (statistic == "prop. max") {
-    # Group the data by date and compute the daily maximum for the specified variable
+      # Group the data by date and compute the daily maximum for the specified variable
       daily_max <- aggregate(window_data[[variable]], 
-                           by = list(date = window_data$date), 
-                           FUN = max, na.rm = TRUE)
-    # Count the number of days where the maximum is above 32 degrees, the divide by total days
+                             by = list(date = window_data$date), 
+                             FUN = max, na.rm = TRUE)
+      # Count the number of days where the maximum is above 32 degrees, the divide by total days
       calc_value <- (sum(daily_max$x > 32)) / abs(window_vec[1] - window_vec[2])
     }
   }
   else {
     if (statistic == "prop. max") {
-    return()
+      return()
     }
     if (statistic == "prop. min") {
-    return()
+      return()
     }}
-    
+  
   # Create a one-row data frame with the desired output structure
   cat("Processing Return Variable", "\n")
   result <- data.frame(
@@ -115,27 +117,7 @@ calc_stat <- function(variable, window, sample, statistic) {
 }
 final_results <- data.frame()
 
-
-### Define Variables:
-
-#main data sets
-
-weather.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/KYWeatherData.mgarvin.Jan25.csv")
-sample.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Phenotype_data/Means.CT.min.csv", header = T) 
-#sample.data <- read_csv("SampleData.mgarvin.Jan25.csv")
-#isolate KY samples
-#KYsamples <- sample.data[sample.data$province == "Kentucky", ]
-# Remove rows with any NA values
-#KYsamples <- KYsamples[complete.cases(KYsamples), ]
-KYsamples <-sample.data
-
-KYsamples %<>%
-  mutate(city = case_when(site == "Berea" ~ "Berea",
-                          site != "Berea" ~ "Lexington"
-  )) %>%
-  mutate(sampleId_orig = paste(Generation, Time.point, city,  year, sep = "_" ))
- 
-
+###
 # Define window sizes
 sets <- data.table(mod = 1:11,
                    start = c(0,  0,  0,  7, 15, 30, 60, 15, 45,  0,  0),
@@ -157,25 +139,7 @@ statistics <- c("mean", "maximum", "minimum", "prop. max", "prop. min", "varianc
 combos <- CJ(win = window_list,
              var = variables, 
              stat = statistics, 
-             samp = KYsamples$sampleId_orig, 
+             samp = meta.ky$sampleId_orig, 
              sorted = FALSE)
 
-
-#view(weather.data)
-
-weather.data$date <- as.Date(with(weather.data, paste(YEAR, MO, DY, sep = "-")), format = "%Y-%m-%d")
-
-
-#### Run the thing!!!!!
-results <- foreach(i = 1:nrow(combos), .combine = rbind,
-                   .errorhandling = "remove",
-                   .packages = "data.table") %do% { 
-  combo <- combos[i, ]  # Extract the i-th row properly
-  calc_stat(combo$var, combo$win, combo$samp, combo$stat)
-}
-
-#view(results)
-#write.csv(results, "SlicedWeatherData.mgarvin.Feb25.csv", row.names = FALSE)
-save(results,
-     file="/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/SlicedWeatherData.JCBN_MOG.Apr16.Rdata")
 
