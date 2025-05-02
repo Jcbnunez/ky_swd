@@ -49,7 +49,7 @@ print("names are", pop1,pop2 )
 #constants
 mu = 2.8e-9 #from Keightley et al. 2014
 g = 0.06666667 #equals 15 gen/year --- See Pool 2015
-iterations=10
+iterations=100
 #####
 
 ####
@@ -69,112 +69,117 @@ S = fs_folded.S()
 
 ####
 #opening output file to give column names
-PMmod=open('split_mig/%s_output.admix.txt' % Pair_name,'w')
+#opening output file to give column names
+PMmod=open('split_mig/%s_output.migsym.txt' % Pair_name,'w')
 PMmod.write(
             str("Pair_name")+'\t'+ #print pair name
+            str("fs_name")+'\t'+ #double checking fs_lines[y] is working as I want it to
             str("L")+'\t'+ #double checking L is working as I want it to
-            str("admix_prop")+'\t'+ #nu1
+            str("pop1_size")+'\t'+ #nu1
+            str("pop2_size")+'\t'+ #nu2
+            str("divergence_time")+'\t'+ #divergence T
+            str("mig_pop1")+'\t'+ #Migration ij
+            str("mig_pop2")+'\t'+ #Migration ji
+            str("theta")+'\t'+
+            str("nu1")+'\t'+
+            str("nu2")+'\t'+
+            str("Ts")+'\t'+
+            str("m12")+'\t'+
             str("fs_sanitycheck")+'\t'+
             str("-2LL_model")+'\t'+
             str("AIC")+'\n')
 PMmod.close()
 
-
 print('defining functions')
 ####
 # For modeling DEST data, pop_ids=[Afr, EU, NA], with Afr and EU interchangeable,
 # so that NA is described as the result of an African-European admixture event.
-def admixture(params, ns, pop_ids=None):
-    nu1, nu2, nu3, T_split, T_admix, admix_prop = params
-    sts = moments.LinearSystem_1D.steady_state_1D(ns[0] + ns[1] + 2 * ns[2])
+#model with symmetric migration from Moments bitbucket
+def split_mig_moments(params, ns, pop_ids=None):
+    if pop_ids is not None and len(pop_ids) != 2:
+        raise ValueError("pop_ids must be a list of two population IDs")
+    nu1, nu2, T, m = params
+    sts = moments.LinearSystem_1D.steady_state_1D(ns[0] + ns[1])
     fs = moments.Spectrum(sts)
-    fs = moments.Manips.split_1D_to_2D(fs, ns[0] + ns[2], ns[1] + ns[2])
-    fs.integrate([nu1, nu2], T_split)
-    fs = fs.admix(0, 1, ns[2], admix_prop)
-    fs.integrate([nu1, nu2, nu3], T_admix)
+    fs = moments.Manips.split_1D_to_2D(fs, ns[0], ns[1])
+    fs.integrate([nu1, nu2], T, m=np.array([[0, m], [m, 0]]))
     fs.pop_ids = pop_ids
     return fs
-###   idx0, idx1, num_lineages, proportion, new_id=None
-    
-func_moments = admixture
-params_guess = [
-    1.0,   # nu1 — pop1 size
-    1.0,   # nu2 — pop2 size
-    1.0,   # nu3 — admixed pop size
-    0.5,   # T_split — moderate divergence
-    0.1,   # T_admix — recent admixture
-    0.5    # admix_prop — equal ancestry from both
-]
-lower_bounds = [
-    0.01,   # nu1
-    0.01,   # nu2
-    0.01,   # nu3
-    0.001,  # T_split
-    0.001,  # T_admix
-    0.01    # admix_prop (avoid 0/1 for numerical reasons)
-]
 
-upper_bounds = [
-    10.0,   # nu1
-    10.0,   # nu2
-    10.0,   # nu3
-    10.0,   # T_split
-    5.0,    # T_admix
-    0.99    # admix_prop
-]
-#upper_bound = [100, 100, 100, 100, 100, 1]
-#lower_bound = [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 0]
+func_moments = split_mig_moments
+
+#boundaries
+#bounded to same standards as theta param script
+upper_bound = [10, 10, 5, 50]
+lower_bound = [1e-5, 1e-5, 1e-5, 0]
 
 
 print('optimization loop')
 for i in range(int(iterations)): #iterations is imported from sys. argument #1
-	print("starting optimization "+str(i))
-#This number is 5. i.e., count parameters. 
-	params = len(["nu1", "nu2", "nu3", "T_split", "T_admix", "admix_prop"]) #for use in AIC calculation
 	#Start the run by picking random parameters from a uniform distribution.
-	#popt=[np.random.uniform(lower_bound[x],upper_bound[x]) for x in range(params)]
-	    
+	#Parameters are set above " nu1, nu2, T, m"
+	#The number "4" in range(4) comes from the number of parameters. Change in needed.
+	prior=[np.random.uniform(lower_bound[x],upper_bound[x]) for x in range(4)]
 	#This is the optimization step for moments.
 	#popt is the prior.
 	#fs folded is a tranform SFS by folding it. The original SFS loaded in sys.arg #1 is quasi-folded. i.e. polarized to reference genome.
 	#Folding it is a must, because reference is not 100% ancestral
-	popt=moments.Inference.optimize_log(params_guess, fs_folded, 
-	func_moments,
-	lower_bound=lower_bounds, 
-	upper_bound=upper_bounds,
-	verbose=True, 
-	maxiter=100)
-	
+	popt=moments.Inference.optimize_log(prior, fs_folded, func_moments,
+	lower_bound=lower_bound, upper_bound=upper_bound,
+	verbose=False, maxiter=100,
+	)
+	#This number is 4. i.e., count parameters. there is an opportunity to streamline the code by propagating this from the beginning.
+	params = len(["nu1", "nu2", "Ts", "m"]) #for use in AIC calculation
+	#This is the moments function.
 	model = func_moments(popt, ns)
-	
 	#Calculate log likelihood of the model fit
 	ll_model=moments.Inference.ll_multinom(model, fs_folded)
 	#Now calculate AIC of model fit
 	aic = 2*params - 2*ll_model
 	print('Maximum log composite likelihood: {0}'.format(ll_model))
-	
 	#Now estimate theta from model fit
 	theta = moments.Inference.optimal_sfs_scaling(model, fs_folded)
+	
 	#reducing complexity of calculations to follow by adding variables in lieu of expressions/esoteric df calls
 	Nref= theta/(4*mu*L)
 	nu1=popt[0]
 	nu2=popt[1]
-	nu3=popt[2] 
-	T_split=popt[3] 
-	T_admix=popt[4]  
-	admix_prop=popt[5] 
+	Ts=popt[2]
+	m12=popt[3]
 	
+	#Now calculate Ts from Model fit
+	divergence_time = 2*Nref*Ts*g #calculates divergence time in years
+	#Now calculate Migration rate (fraction of migrants that move between pops)
+	Mij = m12/(2*Nref) #actual migration rate
+	#Below is an old code which had an error. Keric has since updated it. kept for record keeping. #Jcbn Jun18,2021
+	#mig_pop1 = Mij*(2*popt[0]) #number of individuals going i to j
+	#mig_pop2 = Mij*(2*popt[1]) #number of individuals going j to i
+	#Now we are estimated the nominal migration rate based on Mij
+	mig_pop1 = Mij*(nu1*Nref) #number of individuals going i to j: migrants = Mij*nu1*Nref
+	mig_pop2 = Mij*(nu2*Nref) #number of individuals going j to i: migrants = Mij*nu2*Nref
+	#Now estimate population size
+	pop1_size = nu1*Nref #pop1 size
+	pop2_size = nu2*Nref #pop2 size
 	#Open the output file
-	PMmod=open('%s_output.admix.txt' % Pair_name,'a')
-	    #Dumping output ot outfile
+	PMmod=open('split_mig/%s_output.migsym.txt' % Pair_name,'a')
+	#Dumping output ot outfile
 	PMmod.write(
-	        str(Pair_name)+'\t'+ #print pair name
-	        str(fs_file)+'\t'+ #double checking fs is the right one
-	        str(L)+'\t'+ #double checking L is working as desired
-	        str(admix_prop)+'\t'+ #nu1
-	        str(S)+'\t'+ #sanity check... should give number of segregating sites in SFS
-	        str(ll_model)+'\t'+
-	        str(aic)+'\n')
+	str(Pair_name)+'\t'+ #print pair name
+	str(fs_file)+'\t'+ #double checking fs is the right one
+	str(L)+'\t'+ #double checking L is working as desired
+	str(pop1_size)+'\t'+ #nu1
+	str(pop2_size)+'\t'+ #nu2
+	str(divergence_time)+'\t'+ #divergence T
+	str(mig_pop1)+'\t'+ #Migration ij
+	str(mig_pop2)+'\t'+ #Migration ji
+	str(theta)+'\t'+
+	str(nu1)+'\t'+
+	str(nu2)+'\t'+
+	str(Ts)+'\t'+
+	str(m12)+'\t'+
+	str(S)+'\t'+ #sanity check... should give number of segregating sites in SFS
+	str(ll_model)+'\t'+
+	str(aic)+'\n')
 	PMmod.close()
-	
-	print("Moments finished running")
+
+print("Moments finished running")
