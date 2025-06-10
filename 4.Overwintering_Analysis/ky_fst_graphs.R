@@ -16,7 +16,6 @@ class(world)
 
 setwd("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/plots")
 
-
 root="/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/plots"
 #require(gtools)
 #library(ggpmisc)
@@ -26,7 +25,7 @@ load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents
 load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/fst.matrix.meta.kyva.exc201711.Rdata")
 load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/PCA.coords.kyva.exc201711.Rdata")
 
-
+ran <- get(load("/Users/jcnunez/Library/CloudStorage/OneDrive-UniversityofVermont/Documents/GitHub/ky_swd/4.Overwintering_Analysis/pca.ran.kyva.exc201711.Rdata"))
 
 
 ##################################################################################
@@ -80,6 +79,7 @@ ggplot(data = world) +
   scale_fill_gradient2(low = "steelblue", ,high = "firebrick",
                        midpoint = 0.1) +
   scale_shape_manual(values = 21:22)
+
 
 
 pca.Name %>% 

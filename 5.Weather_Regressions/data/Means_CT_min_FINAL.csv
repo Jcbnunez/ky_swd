@@ -1,0 +1,46 @@
+﻿id,Generation,Time.point,year,site,ctmin,Date ,Fruit type,Juliean Date,Corresponding DNA sample
+1,f4,First,2020,Berea,4.734167,7/17/20,Blackberry,199,
+2,f4,First,2021,Berea,5.629365,7/14/21,Blackberry,195,
+3,f4,First,2021,South Farm,5.889873,7/24/21,Blackberry,205,
+4,f4,First,2022,Berea,4.486538,7/26/22,Blackberry,207,
+5,f4,First,2022,South Farm,4.136957,7/26/22,Blackberry,207,
+6,f4,First,2023,Berea,4.978571,7/21/23,Blackberry,202,KY21
+7,f4,First,2023,South Farm,5.464286,7/19/23,Blackberry,200,
+8,f4,Second,2020,Berea,6.063415,8/26/20,Pokeweed,239,
+9,f4,Second,2020,South Farm,4.878824,9/9/20,Raspberry,252,
+10,f4,Second,2021,Berea,5.771429,8/25/21,Pokeweed,237,
+11,f4,Second,2021,South Farm,6.375714,9/5/21,Raspberry,248,
+12,f4,Second,2022,Berea,6.030597,9/6/22,Pokeweed,249,
+13,f4,Second,2022,South Farm,5.873077,9/9/22,Raspberry,252,
+14,f4,Second,2023,Berea,4.892857,8/25/23,Raspberry,237,
+15,f4,Second,2023,South Farm,4.660577,8/21/23,Pokeweed,233,
+16,f4,Third,2020,Berea,5.735211,10/21/20,Raspberry & Pokeweed,295,
+17,f4,Third,2020,South Farm,5.708333,10/17/20,Pokeweed,291,
+18,f4,Third,2021,Berea,6.275,10/6/21,Pokeweed,279,
+19,f4,Third,2021,South Farm,6.43,11/5/21,Pokeweed,309,
+20,f4,Third,2022,Berea,5.052469,10/16/22,Raspberry & Pokeweed,288,
+21,f4,Third,2022,South Farm,5.140845,10/16/22,Pokeweed,289,
+22,f4,Third,2023,Berea,6.393229,10/5/23,Pokeweed,278,
+23,f4,Third,2023,South Farm,5.207921,10/3/23,Raspberry & Pokeweed,276,
+24,Parental,First,2020,Berea,4.244444,7/17/20,Blackberry,199,KY11
+25,Parental,First,2021,Berea,5.441667,7/14/21,Blackberry,195,
+26,Parental,First,2021,South Farm,4.54,7/24/21,Blackberry,205,KY6
+27,Parental,First,2022,Berea,3.774074,7/26/22,Blackberry,207,KY15
+28,Parental,First,2022,South Farm,3.086364,7/26/22,Blackberry,207,KY18
+29,Parental,First,2023,Berea,4.68,7/21/23,Blackberry,202,KY4
+30,Parental,First,2023,South Farm,3.821429,7/19/23,Blackberry,200,KY1
+31,Parental,Second,2020,Berea,3.97931,8/26/20,Pokeweed,239,KY12
+32,Parental,Second,2020,South Farm,6.510345,9/9/20,Raspberry,253,KY13
+33,Parental,Second,2021,Berea,4.23125,8/25/21,Pokeweed,237,KY10
+34,Parental,Second,2021,South Farm,3.661538,9/5/21,Raspberry,248,KY7
+35,Parental,Second,2022,Berea,4.825,9/6/22,Pokeweed,249,KY16
+36,Parental,Second,2022,South Farm,3.67619,9/9/22,Raspberry,252,KY19
+37,Parental,Second,2023,South Farm,4.959677,8/21/23,Raspberry,233,KY2
+38,Parental,Third,2020,Berea,6.48125,10/21/20,Pokeweed,295,
+39,Parental,Third,2020,South Farm,4.619444,10/17/20,Raspberry & Pokeweed,291,KY 14
+40,Parental,Third,2021,Berea,3.895652,10/6/21,Pokeweed,279,KY9
+41,Parental,Third,2021,South Farm,4.771429,11/5/21,Pokeweed,309,KY8
+42,Parental,Third,2022,Berea,5.234375,10/16/22,Pokeweed,288,KY17
+43,Parental,Third,2022,South Farm,5.781818,10/16/22,Raspberry & Pokeweed,289,
+44,Parental,Third,2023,Berea,4.17,10/5/23,Pokeweed,278,KY5
+45,Parental,Third,2023,South Farm,6.027778,10/3/23,Raspberry & Pokeweed,276,KY3

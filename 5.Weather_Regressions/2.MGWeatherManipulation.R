@@ -21,7 +21,7 @@ library(readr)
 
 ## Functions
 calc_stat <- function(variable, window, sample, statistic) {
-  #variable=combo$var[1];window=combo$win[1];sample=combo$samp[1];statistic=combo$stat[1]
+  #combo <- combos[1, ]; variable=combo$var[1];window=combo$win[1];sample=combo$samp[1];statistic=combo$stat[1]
 
   #a lil sanity check
   cat("variable:", variable, "\n")
@@ -37,7 +37,10 @@ calc_stat <- function(variable, window, sample, statistic) {
   }
   cat("Processing Dates", "\n")
   # Convert the Collection_date to a Date object (assuming format "YEAR-MO-DY")
-  collection_date <- as.Date(sample_row$Date, format="%m/%d/%Y")
+  strsplit(sample_row$Date, "/")[[1]][1] -> m.samp
+  strsplit(sample_row$Date, "/")[[1]][2] -> d.samp
+  sample_row$year -> y.samp
+  collection_date <- as.Date(paste(m.samp,d.samp,y.samp, sep = "/"), format="%m/%d/%Y")
   
   # Define window boundaries:
   # Assuming window[1] is the offset for the end of the window (0 days before = collection day)
@@ -51,8 +54,11 @@ calc_stat <- function(variable, window, sample, statistic) {
   # Create a Date column in weather.data from YEAR, MO, DY (assuming they are numeric)
   
   # Filter weather.data to include only the dates in the desired window
-  window_data <- weather.data[weather.data$date >= window_start & weather.data$date <= window_end, ]
-  
+  weather.data %>%
+    filter(date >= window_start) %>%
+    filter(date <= window_end) ->
+    window_data
+    
   # Calculate the statistic's value of the specified variable in this window (ignore NA values)
   cat("Processing Statistics", "\n")
   if (statistic == "minimum"){
@@ -120,8 +126,44 @@ final_results <- data.frame()
 
 #main data sets
 
-weather.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/KYWeatherData.mgarvin.Jan25.csv")
-sample.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Phenotype_data/Means.CT.min.csv", header = T) 
+#weather.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/KYWeatherData.mgarvin.Jan25.csv")
+
+#### Weather
+#### Weather
+#-84.5378 37.9731
+Lexington_weather <- get_power(
+  community = "ag",
+  lonlat = c(-84.5378, 37.9731),
+  pars = c("RH2M", "T2M", "PRECTOTCORR"),
+  dates = c("2015-01-01", 
+            paste(2025, "-01-01", sep = "")),
+  temporal_api = "hourly"
+)
+Lexington_weather %<>% 
+  mutate(
+    city="Lexington",
+    date=as.Date(paste(YEAR,MO,DY, sep = "/"), format = "%Y/%m/%d")
+  )
+       
+
+#-84.2867 37.5683
+Berea_weather <- get_power(
+  community = "ag",
+  lonlat = c(-84.2867 , 37.5683),
+  pars = c("RH2M", "T2M", "PRECTOTCORR"),
+  dates = c("2015-01-01", 
+            paste(2025, "-01-01", sep = "")),
+  temporal_api = "hourly"
+)
+Berea_weather %<>% 
+  mutate(
+    city="Berea",
+    date=as.Date(paste(YEAR,MO,DY, sep = "/"), format = "%Y/%m/%d")
+  )
+
+weather.data <- rbind(Lexington_weather, Berea_weather)
+
+sample.data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Phenotype_data/Means_CT_min_FINAL.csv", header = T) 
 #sample.data <- read_csv("SampleData.mgarvin.Jan25.csv")
 #isolate KY samples
 #KYsamples <- sample.data[sample.data$province == "Kentucky", ]
@@ -162,8 +204,7 @@ combos <- CJ(win = window_list,
 
 
 #view(weather.data)
-
-weather.data$date <- as.Date(with(weather.data, paste(YEAR, MO, DY, sep = "-")), format = "%Y-%m-%d")
+#weather.data$date <- as.Date(with(weather.data, paste(YEAR, MO, DY, sep = "-")), format = "%Y-%m-%d")
 
 
 #### Run the thing!!!!!
@@ -177,5 +218,5 @@ results <- foreach(i = 1:nrow(combos), .combine = rbind,
 #view(results)
 #write.csv(results, "SlicedWeatherData.mgarvin.Feb25.csv", row.names = FALSE)
 save(results,
-     file="/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/SlicedWeatherData.JCBN_MOG.Apr16.Rdata")
+     file="/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/SlicedWeatherData.JCBN_MOG.Jun5_2025.Rdata")
 

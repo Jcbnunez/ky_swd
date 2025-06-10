@@ -6,43 +6,51 @@ library(foreach)
 library(forcats)
 library(lme4)
 
+###Filter
+
+
 ###load data
-weather_slice <- fread("/gpfs2/scratch/jcnunez/Dsu.prelim.data/Spotty_fly_1_regressions/SlicedWeatherData.mgarvin.Feb25.csv")
+weather_slice <- get(load("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Weather_data/SlicedWeatherData.JCBN_MOG.Jun5_2025.Rdata"))
 weather_slice %<>%
   mutate(win = factor(win, levels = unique(weather_slice$win)))
 
-traits <- fread("/gpfs2/scratch/jcnunez/Dsu.prelim.data/Spotty_fly_1_regressions/traits_for_seq_data.txt") 
+traits <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/Ellie_MS/Phenotype_data/Means_CT_min_FINAL.csv") 
+traits %<>%
+  mutate(sampleId_orig = paste(Generation, 
+                               Time.point, 
+                               ifelse(site == "Berea", "Berea", "Lexington"), 
+                               year, sep = "_"))
+
 meta <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/2024_Joaquin_KY/swd.metadata.txt")
 
 names(weather_slice)[1] = "sampleId_orig"
 
 #### Run models
-#i = weather_slice$win[1]
-#j = weather_slice$variable[1]
-#k = weather_slice$stat[1]
+#i = weather_slice$win[1]; j = weather_slice$variable[1]; k = weather_slice$stat[1]; g = "f4"
 
 o =
-  foreach( k = unique(weather_slice$stat)[4],
-           #k = "prop. max",
+  foreach( g = c("f4","Parental"),
            .combine = "rbind",
            .errorhandling = "remove")%do%{
-  foreach( j = unique(weather_slice$variable)[1],
-           #j =T2M,
+  foreach( k = unique(weather_slice$stat),
+           .combine = "rbind",
+           .errorhandling = "remove")%do%{
+  foreach( j = unique(weather_slice$variable),
            .combine = "rbind",
            .errorhandling = "remove")%do%{
 foreach( i = unique(weather_slice$win),
          .combine = "rbind",
          .errorhandling = "remove")%do%{
-           
-  message(paste(p, i, j, k,sep = " ") ) 
+  
+  #i=unique(weather_slice$stat)[4][1]; j = unique(weather_slice$variable)[1][1]; i = unique(weather_slice$win)[1]          
+  message(paste(g, i, j, k,sep = " ") ) 
            
   weather_slice %>%
     filter(win == i) %>%
     filter(variable == j) %>%
     filter(stat == k) %>%
-    filter( sampleId_orig != "KY20") %>%
-    left_join(traits[,-2]) %>%
-    left_join(meta) -> tmp.obj
+    left_join(traits, by = "sampleId_orig") %>%
+    filter(Generation == g) -> tmp.obj
   
   foreach( p = 0:100,
            .combine = "rbind",
@@ -51,8 +59,8 @@ foreach( i = unique(weather_slice$win),
   if(p == 0){
     #model0 <- lmer(Ctmin ~ city + (1 | fruit_type), data = tmp.obj)  
     #model1 <- lmer(Ctmin ~ city + (1 | fruit_type) + value, data = tmp.obj)  
-    model0 <- lmer(Ctmin ~ (1 | city) + (1 | fruit_type), data = tmp.obj)  
-    model1 <- lmer(Ctmin ~ (1 | city) + (1 | fruit_type) + value, data = tmp.obj)  
+    model0 <- lmer(ctmin ~ (1 | site) + (1 | `Fruit type`), data = tmp.obj)  
+    model1 <- lmer(ctmin ~ (1 | site) + (1 | `Fruit type`) + value, data = tmp.obj)  
     #model0 <- lm(Ctmin ~ city +  fruit_type, data = tmp.obj)  
     #model1 <- lm(Ctmin ~ city +  fruit_type + value, data = tmp.obj)  
     
@@ -62,7 +70,7 @@ foreach( i = unique(weather_slice$win),
    
    ## Randomize traits with fruit and city
    tmp.obj[sample(dim(tmp.obj)[1]),] %>%
-     dplyr::select(Ctmin, city, fruit_type) ->
+     dplyr::select(ctmin, site, `Fruit type`) ->
      randomized_sample
    
    tmp.obj %>% 
@@ -71,9 +79,9 @@ foreach( i = unique(weather_slice$win),
    
    ran.tmp = cbind(randomized_sample, true_value)
    
-   model0 <- lmer(Ctmin ~ (1 | city) + (1 | fruit_type), 
+   model0 <- lmer(ctmin ~ (1 | site) + (1 | `Fruit type`), 
                   data = ran.tmp)  
-   model1 <- lmer(Ctmin ~ (1 | city) + (1 | fruit_type) + value, 
+   model1 <- lmer(ctmin ~ (1 | site) + (1 | `Fruit type`) + value, 
                   data = ran.tmp)  
    p_lrt=anova(model1, model0, test="Chisq")[2,8]
    
@@ -82,36 +90,22 @@ foreach( i = unique(weather_slice$win),
   data.frame(
     win= i,
     p=p,
+    Generation=g,
     variable = j,
     stat= k,
     p_lrt=p_lrt
   ) 
-}}}}
+}}}}}
 o
 
 o %<>%
   mutate(win = factor(win, levels = unique(weather_slice$win)))
 
-o %>%
-  group_by(p == 0,
-           win) %>%
-  summarise(m.Plrt = quantile(p_lrt, 0.05)) %>%
-  dcast(win~`p == 0`) %>%
-  mutate(TEST = `FALSE` > `TRUE`) ->
-  significant_test
+o %<>%
+  mutate(Perm_type = case_when(
+    p == 0 ~ "real",
+    p != 0 ~ "perm"
+  ))
+###here save o and sent to JCBN
+save(o, file = "GLM_models_output_JCBN_Jun6.Rdata")
 
-o %<>% left_join(significant_test)
-  
-ggplot() +
-  geom_violin(data = filter(o, p > 0),
-              aes(x=win,
-                  y=-log10(p_lrt))
-              ) +
-  geom_point(data = filter(o, p == 0),
-              aes(x=win,
-                  y=-log10(p_lrt),
-                  shape = TEST ),
-             size = 3, fill = "red"
-  ) + scale_shape_manual(values = 23:24) + 
-  ggtitle("Days above 35°C") -> test.plot
-ggsave(test.plot, file = "test.plot.pdf")
