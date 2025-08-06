@@ -276,6 +276,30 @@ axisdf = don %>%
   group_by(chr) %>%
   summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
 
+### < ----- TOP HITS!!!
+### < ----- TOP HITS!!!
+### < ----- TOP HITS!!!
+### < ----- TOP HITS!!!
+load("C2_df.Rdata")
+load("C2_genome_scan.Rdata")
+load("annots.flt.Rdata")
+
+annots.flt$pos = as.numeric(annots.flt$pos)
+C2_genome_scan %>%
+  left_join(C2_df) %>%
+  filter(lindley > th01) %>%
+  filter(pval < 0.01) %>%
+  left_join(annots.flt) ->
+  top_c2_lindleyPeaks_hits
+
+unique(top_c2_lindleyPeaks_hits$Feature)
+write.table(top_c2_lindleyPeaks_hits, 
+            file = "top_c2_lindleyPeaks_hits.txt", 
+            append = FALSE, quote = FALSE, sep = "\t",
+            eol = "\n", na = "NA", dec = ".", row.names = FALSE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
+
 ### Load BF T>32 data + CTmin
 tmp.x.cov.idx=ct.beta.X$COVARIABLE==2 ; tmp.a.cov.idx=ct.beta.A$COVARIABLE==2
 tmp.all.bf=c(ct.beta.X$BF.dB.[tmp.x.cov.idx],ct.beta.A$BF.dB.[tmp.a.cov.idx])
