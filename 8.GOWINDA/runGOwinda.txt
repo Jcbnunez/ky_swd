@@ -1,0 +1,36 @@
+#GOwinda analysis
+gowinda=/netfiles/nunezlab/Shared_Resources/Software/GOwinda/Gowinda-1.12.jar
+
+all_SNPS=/gpfs2/scratch/jcnunez/SWD_GO/c2_universe_snps.txt 
+all_outs=/gpfs2/scratch/jcnunez/SWD_GO/c2_outliers.txt
+
+assocGO=/netfiles/nunezlab/D_suzukii_resources/Annotations_and_GO/version_MG_INRA2024_genome/parsed_go_named.SWD.funcassione.txt
+SWDgtf=/netfiles/nunezlab/D_suzukii_resources/Annotations_and_GO/version_MG_INRA2024_genome/gtf_gowind.swd.gtf
+
+java -jar $gowinda \
+--snp-file $all_SNPS \
+--candidate-snp-file $all_outs \
+--gene-set-file $assocGO \
+--annotation-file $SWDgtf \
+--simulations 100000 \
+--min-significance 1 \
+--gene-definition gene \
+--threads 4 \
+--output-file C2_outliers_gowinda_results.txt \
+--mode gene \
+--min-genes 5 
+
+
+
+java -jar $gowinda \
+--snp-file $all_SNPS \
+--candidate-snp-file c2_top1perc_snps.txt \
+--gene-set-file $assocGO \
+--annotation-file $SWDgtf \
+--simulations 100000 \
+--min-significance 1 \
+--gene-definition gene \
+--threads 4 \
+--output-file C2_top1perc_gowinda_results.txt \
+--mode gene \
+--min-genes 5 
