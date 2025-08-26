@@ -284,6 +284,16 @@ load("C2_df.Rdata")
 load("C2_genome_scan.Rdata")
 load("annots.flt.Rdata")
 
+###some interesting questions for us to explore here. 
+### how manyu c2 outliers, in general, are there. 
+C2_df %>%
+  filter(P_C2 > 2) %>% dim
+C2_df %>%
+  filter(P_C2 > 2) %>% 
+  group_by(chr) %>%
+  summarise(N=n())
+###
+
 annots.flt$pos = as.numeric(annots.flt$pos)
 C2_genome_scan %>%
   left_join(C2_df) %>%
@@ -300,7 +310,73 @@ write.table(top_c2_lindleyPeaks_hits,
             col.names = TRUE, qmethod = c("escape", "double"),
             fileEncoding = "")
 
-### Load BF T>32 data + CTmin
+#### Lets explore the data a bit. these the top hits for C2. <-- jcbn here
+c2_top_hits_annotated <- fread("Top Genes in C2_SNPs.tsv")
+c2_top_hits_annotated %<>% mutate(SNP_id = paste(chr, pos, sep = "_"))
+c2_top_hits_annotated$Gene_Name %>% table %>% length()
+c2_top_hits_annotated$Consequence  
+
+c2_top_hits_annotated %>% 
+  mutate(tomtom_tets = as.numeric(tomtom_q) < 0.3) %>%
+  group_by(tomtom_tets,Consequence) %>%
+  summarise(N=n())
+  
+#### Here we will start incorporating new data
+
+### CTmin
+### CTmin
+### First we will load the data for CTmin
+tmp.x.cov.idx=ct.beta.X$COVARIABLE==1 ; tmp.a.cov.idx=ct.beta.A$COVARIABLE==1
+tmp.all.bf=c(ct.beta.X$BF.dB.[tmp.x.cov.idx],ct.beta.A$BF.dB.[tmp.a.cov.idx])
+summary(tmp.all.bf)
+#hist(tmp.all.bf,breaks=10,ylab="Pvalue",main="Distribution of p-value associated with XtX* (unilateral and all SNPs)",freq=F)
+#abline(h=1,col="red")
+tmp.all.pi=c(ct.pixtx.X$M_P,ct.pixtx.A$M_P)
+#tmp.pos=rbind(fread("baypass_files/X.ky.new.ct.snpdet.gz",data.table = F),fread("baypass_files/A.ky.new.ct.snpdet.gz",data.table = F))
+tmp.pos=rbind(read.table(gzfile("baypass_files/X.ky.new.ct.snpdet.gz")),read.table(gzfile("baypass_files/A.ky.new.ct.snpdet.gz")))
+ct.bf.ls.xi1=compute.local.scores(tmp.pos[,1:2],snp.pi=tmp.all.pi,snp.bf=tmp.all.bf,xi=1,manplot = T,main="xi=1")
+#rm(tmp.all.bf,tmp.all.pi,tmp.pos)
+
+ctminBF_df = data.frame(tmp.pos[,1:2],snp.pi=tmp.all.pi,snp.bf=tmp.all.bf) 
+names(ctminBF_df)[1:4] = c("chr","pos", "freqBF", "BF_ctmin")
+setDT(ctminBF_df) 
+ctminBF_df %<>%
+  mutate(SNP_id = paste(chr, pos, sep = "_"))
+
+## explore ctmin data a bit
+ctminBF_df %>%
+  filter(BF_ctmin > 5)
+
+left_join(C2_df, ctminBF_df, by = c("chr","pos")) %>%
+  mutate(top_hit = case_when(SNP_id %in% c2_top_hits_annotated$SNP_id ~ "yes",
+                             TRUE ~ "no"))-> 
+  C2_BFctmin_df
+setDT(C2_BFctmin_df)
+
+C2_BFctmin_df %>%
+  filter(P_C2 > 2) %>%
+  filter(BF_ctmin > 5)
+  
+
+C2_BFctmin_df %>%
+  filter(P_C2 > 2) %>%
+  ggplot(aes(
+    x=P_C2,
+    y=BF_ctmin,
+    shape = top_hit,
+    size = top_hit,
+    fill = BF_ctmin > 5
+  )) + geom_point() +
+  geom_hline(yintercept = 5) +
+  scale_size_manual(values = c(1,3)) +
+  scale_shape_manual(values = 23:24) ->
+  c2_bf.plot
+
+ggsave(c2_bf.plot, file = "c2_bf.plot.pdf")
+  
+
+
+### Now Load BF T>32 
 tmp.x.cov.idx=ct.beta.X$COVARIABLE==2 ; tmp.a.cov.idx=ct.beta.A$COVARIABLE==2
 tmp.all.bf=c(ct.beta.X$BF.dB.[tmp.x.cov.idx],ct.beta.A$BF.dB.[tmp.a.cov.idx])
 #hist(tmp.all.bf,breaks=10,ylab="Pvalue",main="Distribution of p-value associated with XtX* (unilateral and all SNPs)",freq=F)
@@ -312,14 +388,15 @@ tmp.pos=rbind(read.table(gzfile("baypass_files/X.ky.new.ct.snpdet.gz")),read.tab
 T32BF_df = data.frame(tmp.pos[,1:2],snp.pi=tmp.all.pi,snp.bf=tmp.all.bf)
 names(T32BF_df)[1:4] = c("chr","pos", "freqBF", "BF_T32")
 setDT(T32BF_df)
-
+T32BF_df %<>%
+  mutate(SNP_id = paste(chr, pos, sep = "_"))
 
 left_join(C2_df, T32BF_df, by = c("chr","pos")) -> 
 C2_BF_df
 setDT(C2_BF_df)
 
 C2_BF_df %>%
-  filter(BF_T32 > 1) %>% dim
+  filter(BF_T32 > 5) %>% dim
 
 C2_BF_df %<>% mutate(snp_id = paste(chr, pos, sep = "_"))
 C2_BF_df %>%
@@ -338,13 +415,13 @@ c("chr3_63316068",
 #chr2:  chr2R 20147914 0.6753870 2.021395 0.6753870 -7.7791230 chr2R_20147914 (Dg)
 
 ##### BFs
-C2_BF_df %>%
-filter(BF_T32 > 1 & P_C2 > 2) %>% dim
-C2_BF_df %>%
-filter(BF_T32 > 1 & P_C2 > 2) %>% 
+#C2_BF_df %>%
+#filter(BF_T32 > 1 & P_C2 > 2) %>% dim
+C2_df %>%
+filter(P_C2 > 2) %>% 
 group_by(chr) %>%
 summarize(N=n()) -> sigbf
-C2_BF_df %>%
+C2_df %>%
 group_by(chr) %>%
 summarize(all=n()) -> allbg
 full_join(sigbf, allbg) %>%
@@ -352,29 +429,41 @@ mutate(frac = N/all*100)
 
 annots.flt$pos = as.numeric(annots.flt$pos)
 
-C2_BF_df2=C2_BF_df
-names(C2_BF_df2)[1:2] = c("chr","pos")
 don %>%
-left_join(C2_BF_df2) %>%
+left_join(C2_df) %>%
 left_join(annots.flt) ->
 don_BF
 
 ggplot() +
     # Show all points
-    geom_line(data = don_BF, 
+  geom_point(data = filter(don_BF, lindley < 0.001)[sample(dim(filter(don_BF, lindley < 0.001))[1], 1000),] , 
+             aes(x=pos/1e6, y=log10(lindley+1), color=as.factor(chr)), 
+             alpha=0.8, size=0.5) +
+    geom_point(data = filter(don_BF, lindley < 0.5 & lindley > 0.001)[sample(dim(filter(don_BF, lindley < 0.5 & lindley > 0.001))[1], 9000),] , 
     aes(x=pos/1e6, y=log10(lindley+1), color=as.factor(chr)), 
     alpha=0.8, size=0.5) +
+  geom_point(data = filter(don_BF, lindley > 0.5)[sample(dim(filter(don_BF, lindley > 0.5))[1], 9000),] , 
+             aes(x=pos/1e6, y=log10(lindley+1), color=as.factor(chr)), 
+             alpha=0.8, size=0.5) +
     geom_line(data = don_BF,aes(x=pos/1e6, y = log10(th01+1))) +
-    geom_point(data = slice_max(filter(group_by(don_BF, Feature), BF_T32 > 1 & P_C2 > 2 & lindley >  th01), BF_T32), 
-    aes(x=pos/1e6, y=log10(lindley+1)), 
+    geom_point(data = slice_max(group_by(c2_top_hits_annotated, Gene_Name), lindley_score), 
+    aes(x=pos/1e6, y=log10(lindley_score+1)), 
     alpha=0.8, size=1.2, color = "red") +
     scale_color_manual(values = rep(c("skyblue", "grey"), 22 )) +
     # custom X axis:
     scale_y_continuous(expand = c(0, 0) ) +     # remove space between plot area and x axis
     # Custom the theme:
     theme_bw() +
-    geom_text(data = slice_max(filter(group_by(don_BF, Feature), BF_T32 > 1 & P_C2 > 2 & lindley >  th01), BF_T32), 
-    size=2, aes(label = Feature, x=pos/1e6, y=log10(lindley+1) )) + 
+    geom_text_repel(
+    max.overlaps = 100,                
+    data = slice_max(group_by(c2_top_hits_annotated, Gene_Name), lindley_score), 
+    size=0.9, 
+    force        = 0.5,
+    nudge_x      = -0.25,
+    direction    = "y",
+    hjust        = 1,
+    segment.size = 0.2,
+    aes(label = Gene_Name, x=pos/1e6, y=log10(lindley_score+1) )) + 
     facet_grid(~chr, scales = "free_x", space = "free") +
     theme( 
       legend.position="none",
@@ -384,8 +473,10 @@ ggplot() +
     ) -> coloc_c2BF_manhat
     
 ggsave(coloc_c2BF_manhat, file = "coloc_c2BF_manhat.pdf", 
-w = 6, h = 3)
+w = 9, h = 3)
 
+
+###
 
 filter(don_BF, BF_T32 >= 1 & P_C2 >= 2 & lindley >=  th01) %>%
 left_join(annots.flt) %>%
@@ -405,6 +496,15 @@ BF_C2_hits %>%
 BF_C2_hits %>%
   group_by(Feature) %>%
   summarize(N=n())
+
+#### Combining all datastes
+left_join(C2_df, T32BF_df, by = c("chr","pos")) %>%
+  left_join(ctminBF_df)-> 
+  C2_BFct_BFT_df
+setDT(C2_BFct_BFT_df)
+
+save(C2_BFct_BFT_df, file = "C2_BFct_BFT_df.allAnalyses.Rdata")
+
 
 ###conseervative outliers
 tmp.chr2=don_BF
