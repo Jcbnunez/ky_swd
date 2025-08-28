@@ -21,7 +21,7 @@ library(magrittr)
 
 ####
 ##### Tracking analysis
-samps <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023/2024_Joaquin_KY/swd.metadata.txt")
+samps <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023_BAYPASS_MG/2024_Joaquin_KY/swd.metadata.txt")
 
 dat_f <- "all.pooldata.new.rds"    
 all_dat <- readRDS(dat_f)
@@ -36,14 +36,16 @@ ky.tag.flt <- indexer.ky$index[which(!indexer.ky$name %in% exclude)]
 
 ### load snp info
 load("snp_info.Rdata")
+c2_top_hits_annotated <- fread("Top Genes in C2_SNPs.tsv")
+c2_top_hits_annotated %<>% mutate(SNP_id = paste(chr, pos, sep ="_")) #%>%
+#  filter(!Gene_Name %in% c("No current annotation"))  %>%
+#  filter(!is.na(Gene_Name))
+traits <- fread("Means_CT_min_FINAL.csv")
+
 snp_info %>% 
 filter(snp_id %in% 
 c(
-"chr3_63316068",
-"chr3_67001738",
-"chr3_65836197",
-"chrX_11184269",
-"chr2R_20147914")
+  c2_top_hits_annotated$SNP_id)
 ) %>%
 mutate(rs.id = rownames(.)) %>%
 separate(remove = F, rs.id, into = c("feat", "index"),
@@ -71,6 +73,27 @@ Trajectory_genes <-
 	verbose = TRUE
 	)
 
+### PCA bit
+pca_result <- randomallele.pca(Trajectory_genes, scale = TRUE)
+
+pca_result$pop.loadings %>% as.data.frame() %>%
+  mutate(sampleId_orig=row.names(.)) %>%
+  left_join(samps) %>%
+  left_join(traits)-> pc_loadings
+
+pc_loadings %>%
+  ggplot(aes(
+    x=V1,
+    y=V2,
+    label = sampleId_orig,
+    fill=Time.point,
+  )) + geom_point(size = 4, shape = 21) +
+  geom_text() +
+  theme_bw()->
+  PCA_plot
+ggsave(PCA_plot, file = "PCA12.dim.png", w = 5, h =4)
+
+## Trajectory
 ref_count <- Trajectory_genes@refallele.readcount
 coverage <- Trajectory_genes@readcoverage
 afs <- ref_count/coverage
@@ -82,7 +105,6 @@ afs.id
 
 names(afs.id) = c(Trajectory_genes@poolnames, "snp_id")
 
-traits <- fread("Means_CT_min_FINAL.csv")
 
 afs.id %>%
 melt(id = "snp_id", variable.name = "sampleId_orig") %>%
@@ -96,26 +118,60 @@ afs.id.annot
 afs.id.annot$pos = as.numeric(afs.id.annot$pos)
 
 afs.id.annot %>%
-group_by(snp_id) %>%
-ggplot(aes(
-x=`Juliean Date`,
-y=value,
-color = Time.point,
-shape=as.factor(year),,
-group=snp_id
-)) + geom_point()+
-geom_smooth(method = "lm", se = F, 
-color = "black" 
-) +
-facet_grid(site~factor(snp_id, levels = c(
-"chr3_63316068" ,
-"chr3_65836197",
-"chr3_67001738",
-"chrX_11184269",
-"chr2R_20147914"  
-))) + theme_bw() ->
+group_by(snp_id, Time.point, year) %>%
+  summarize(AFm = mean(value)) %>%
+  filter(AFm > 0 & AFm < 1) %>%
+  dcast(snp_id~Time.point+year) %>%
+  .[complete.cases(.),] %>%
+  melt(id = c("snp_id"), value.var = "AFm" ) ->
+  plot_freq_data
+
+ggplot() +
+geom_line( data =plot_freq_data,
+           aes(
+  x=factor(variable, levels = c("First_2020","Second_2020","Third_2020",
+                                "First_2021","Second_2021","Third_2021",
+                                "First_2022","Second_2022","Third_2022",
+                                "First_2023","Second_2023","Third_2023"
+  )),
+  y=value,
+  group=snp_id
+),
+alpha = 0.3) +
+  geom_line( data =filter(plot_freq_data, snp_id == "chr2R_9856476"),
+             aes(
+               x=factor(variable, levels = c("First_2020","Second_2020","Third_2020",
+                                             "First_2021","Second_2021","Third_2021",
+                                             "First_2022","Second_2022","Third_2022",
+                                             "First_2023","Second_2023","Third_2023"
+               )),
+               y=value,
+               group=snp_id
+             ),
+             alpha = 0.9, color = "blue", size = 1.3) +
+  #geom_smooth(method = "lm", se = F, color = "black" ) +
+theme_bw() ->
 af_trajectories.yday
 
 ggsave(af_trajectories.yday, file = "af_trajectories.yday.pdf",
 w=6, h = 2.5)
 
+#chr2R_9856476
+#chr2R_9856487
+
+###
+afs.id.annot %>%
+  group_by(snp_id) %>%
+  ggplot(aes(
+    x=as.Date(Date, format = "%m/%d/%Y"),
+    y=value,
+    color=site,
+    #shape=as.factor(year),,
+  )) + geom_line()+
+  #geom_smooth(method = "lm", se = F, 
+  #            color = "black" ) +
+  facet_grid(year~factor(snp_id), scales = "free_x") + theme_bw() ->
+  af_trajectories.yday
+
+ggsave(af_trajectories.yday, file = "af_trajectories.yday.pdf",
+       w=6, h = 2.5)

@@ -18,6 +18,36 @@ C2_BFct_BFT_df %>%
                              TRUE ~ "no"))-> 
   C2_BFct_BFT_df
 
+
+#####
+C2_BFct_BFT_df %>%
+  filter(BF_T32 >=5)
+#27432
+
+C2_BFct_BFT_df %>%
+  filter(BF_ctmin >=5)
+#11522
+
+
+C2_BFct_BFT_df %>%
+  filter(BF_T32 >=5) %>%
+  group_by(top_hit) %>%
+  summarize(N=n())
+#top_hit     N
+#<chr>   <int>
+# 1 no      27410
+# 2 yes        22
+
+C2_BFct_BFT_df %>%
+  filter(BF_ctmin >=5) %>%
+  group_by(top_hit) %>%
+  summarize(N=n())
+#top_hit     N
+#<chr>   <int>
+#  1 no      11522
+
+
+
 ###
 C2_BFct_BFT_df %>%
   filter(P_C2 > 2) %>%
@@ -67,18 +97,53 @@ C2_BFct_BFT_df %>%
 
 ggsave(bfCTmin_bfT32.plot, file = "bfCTmin_bfT32.plot.pdf")
 
+#####
+##data:  FETdat with Ctmin
+##p-value < 2.2e-16
+##alternative hypothesis: true odds ratio is greater than 1
+##95 percent confidence interval:
+##  1.702682      Inf
+##sample estimates:
+##  odds ratio 
+##1.897684 
+##
+##data:  FETdatT32
+##p-value < 2.2e-16
+##alternative hypothesis: true odds ratio is greater than 1
+##95 percent confidence interval:
+##  8.671068      Inf
+##sample estimates:
+##  odds ratio 
+##8.981149 
+##
+
+
+#data:  FETdatT32 with only top outliers
+#p-value < 2.2e-16
+#alternative hypothesis: true odds ratio is greater than 1
+#95 percent confidence interval:
+#  10.22897      Inf
+#sample estimates:
+#  odds ratio 
+#15.3168 
+#> FETdatT32
+#[,1]    [,2]
+#[1,]   22   27410
+#[2,]  290 5533884
+#
+
 ### Enrichment Analyses
 C2_BFct_BFT_df %>%
-  filter(P_C2 > 2) %>%
+  filter(top_hit == "yes") %>%
   filter(BF_ctmin > 5) -> c2yesBfyes
 C2_BFct_BFT_df %>%
-  filter(P_C2 > 2) %>%
+  filter(top_hit == "yes") %>%
   filter(BF_ctmin < 5) -> c2yesBfno
 C2_BFct_BFT_df %>%
-  filter(P_C2 < 2) %>%
+  filter(top_hit == "no") %>%
   filter(BF_ctmin > 5) -> c2noBfyes
 C2_BFct_BFT_df %>%
-  filter(P_C2 < 2) %>%
+  filter(top_hit == "no") %>%
   filter(BF_ctmin < 5) -> c2noBfno
 
 ###
@@ -97,16 +162,16 @@ fisher.test(FETdat, alternative = "greater")
 #####
 ### Enrichment Analyses
 C2_BFct_BFT_df %>%
-  filter(P_C2 > 2) %>%
+  filter(top_hit == "yes") %>%
   filter(BF_T32 > 5) -> c2yesBfTyes
 C2_BFct_BFT_df %>%
-  filter(P_C2 > 2) %>%
+  filter(top_hit == "yes") %>%
   filter(BF_T32 < 5) -> c2yesBfTno
 C2_BFct_BFT_df %>%
-  filter(P_C2 < 2) %>%
+  filter(top_hit == "no") %>%
   filter(BF_T32 > 5) -> c2noBfTyes
 C2_BFct_BFT_df %>%
-  filter(P_C2 < 2) %>%
+  filter(top_hit == "no") %>%
   filter(BF_T32 < 5) -> c2noBfTno
 
 ###
