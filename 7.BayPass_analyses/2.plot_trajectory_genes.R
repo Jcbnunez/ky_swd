@@ -107,7 +107,7 @@ names(afs.id) = c(Trajectory_genes@poolnames, "snp_id")
 
 
 afs.id %>%
-melt(id = "snp_id", variable.name = "sampleId_orig") %>%
+reshape2::melt(id = "snp_id", variable.name = "sampleId_orig") %>%
 left_join(samps) %>%
 separate(remove = F, snp_id,
 into = c("chr", "pos"),
@@ -121,9 +121,9 @@ afs.id.annot %>%
 group_by(snp_id, Time.point, year) %>%
   summarize(AFm = mean(value)) %>%
   filter(AFm > 0 & AFm < 1) %>%
-  dcast(snp_id~Time.point+year) %>%
+  reshape2::dcast(snp_id~Time.point+year) %>%
   .[complete.cases(.),] %>%
-  melt(id = c("snp_id"), value.var = "AFm" ) ->
+  reshape2::melt(id = c("snp_id"), value.var = "AFm" ) ->
   plot_freq_data
 
 ggplot() +
@@ -149,7 +149,17 @@ alpha = 0.3) +
                group=snp_id
              ),
              alpha = 0.9, color = "blue", size = 1.3) +
-  #geom_smooth(method = "lm", se = F, color = "black" ) +
+  geom_line( data =filter(plot_freq_data, snp_id == "chr3_63767211"),
+             aes(
+               x=factor(variable, levels = c("First_2020","Second_2020","Third_2020",
+                                             "First_2021","Second_2021","Third_2021",
+                                             "First_2022","Second_2022","Third_2022",
+                                             "First_2023","Second_2023","Third_2023"
+               )),
+               y=value,
+               group=snp_id
+             ),
+             alpha = 0.9, color = "red", size = 1.3) +
 theme_bw() ->
 af_trajectories.yday
 
