@@ -20,7 +20,7 @@ clarkl=/netfiles/nunezlab/Shared_Resources/Software/CLARKV1.3.0.0/exe/CLARK-l
 
 ####
 #summary_csv.awk
-parseclarkcsv=/gpfs2/scratch/jcnunez/Dsu.prelim.data/droso_clark/summary_csv.awk 
+parseclarkcsv=/netfiles/nunezlab/Shared_Resources/Software/CLARKV1.3.0.0/summary_csv.awk
 ####
 
 #### User given data
