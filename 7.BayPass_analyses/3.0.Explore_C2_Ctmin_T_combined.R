@@ -18,7 +18,49 @@ C2_BFct_BFT_df %>%
                              TRUE ~ "no"))-> 
   C2_BFct_BFT_df
 
+annots.flt$pos = as.numeric(annots.flt$pos)
+C2_BFct_BFT_df %>%
+  left_join(annots.flt) -> C2_BFct_BFT_df
 
+
+#####
+C2_BFct_BFT_df %>%
+  filter(BF_T32 > 5) %>%
+  filter(BF_ctmin > 5) -> tycy
+C2_BFct_BFT_df %>%
+  filter(BF_T32 > 5) %>%
+  filter(BF_ctmin < 5) -> tycn
+C2_BFct_BFT_df %>%
+  filter(BF_T32 < 5) %>%
+  filter(BF_ctmin > 5) -> tncy
+C2_BFct_BFT_df %>%
+  filter(BF_T32 < 5) %>%
+  filter(BF_ctmin < 5) -> tncn
+
+###
+FETdat.tc <-
+  matrix(c(dim(tycy)[1], dim(tycn)[1], 
+           dim(tncy)[1], dim(tncn)[1]),
+         nrow = 2)
+
+fisher.test(FETdat.tc, alternative = "greater")
+
+write.table(tycy, file = "ctmin.t32.snps.txt", 
+            append = FALSE, quote = FALSE, sep = "\t",
+            eol = "\n", na = "NA", dec = ".", row.names = FALSE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
+
+genes_t32c <- fread("gene_result.ctminT32.txt")
+tycy$Gene = as.numeric(tycy$Gene)
+
+tycy %>%
+  left_join(genes_t32c, by = "Gene") -> tycy.annot
+write.table(tycy.annot, file = "ctmin.t32.annot.snps.txt", 
+            append = FALSE, quote = FALSE, sep = "\t",
+            eol = "\n", na = "NA", dec = ".", row.names = FALSE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
 #####
 C2_BFct_BFT_df %>%
   filter(BF_T32 >=5)

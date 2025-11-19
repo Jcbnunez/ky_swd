@@ -1,0 +1,10 @@
+basename    wt
+AF.bwt10    -0.1
+AF.bwt20    -0.2
+AF.bwt30    -0.3
+AF.bwt40    -0.4
+AF.bwt50    -0.5
+AF.bwt60    -0.6
+AF.bwt70    -0.7
+AF.bwt80    -0.8
+AF.bwt90    -0.9

@@ -36,11 +36,21 @@ ky.tag.flt <- indexer.ky$index[which(!indexer.ky$name %in% exclude)]
 
 ### load snp info
 load("snp_info.Rdata")
+##Chromosome Position RefAllele AltAllele    snp_id
+##rs2        chrX     4133         C         T chrX_4133
+##rs3        chrX     4139       ATA        AA chrX_4139
+##rs4        chrX     4180         A         T chrX_4180
+##rs27       chrX     4577         A         G chrX_4577
+##rs29       chrX     4633         G         A chrX_4633
+##rs39       chrX     4897         A         G chrX_4897
+traits <- fread("Means_CT_min_FINAL.csv")
+
+#### part 1. Top C2 alleles
+
 c2_top_hits_annotated <- fread("Top Genes in C2_SNPs.tsv")
 c2_top_hits_annotated %<>% mutate(SNP_id = paste(chr, pos, sep ="_")) #%>%
 #  filter(!Gene_Name %in% c("No current annotation"))  %>%
 #  filter(!is.na(Gene_Name))
-traits <- fread("Means_CT_min_FINAL.csv")
 
 snp_info %>% 
 filter(snp_id %in% 
@@ -185,3 +195,114 @@ afs.id.annot %>%
 
 ggsave(af_trajectories.yday, file = "af_trajectories.yday.pdf",
        w=6, h = 2.5)
+
+
+#### Part 2. 
+#### Part 2. Plot T32 and CTmin alleles
+#### Part 2. 
+ctmin_t32_BF <- fread("ctmin.t32.annot.snps.txt")
+Weather_Data <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023_BAYPASS_MG/Ellie_MS/Weather_data/SlicedWeatherData.mgarvin.Feb25.csv")
+
+snp_info %>% 
+  filter(snp_id %in% 
+           c(
+             ctmin_t32_BF$SNP_id)
+  ) %>%
+  mutate(rs.id = rownames(.)) %>%
+  separate(remove = F, rs.id, into = c("feat", "index"),
+           sep = "s") ->
+  snp_info.df2
+
+Trajectory_genes2 <-
+  pooldata.subset(
+    all_dat,
+    pool.index = ky.tag.flt,
+    snp.index = as.numeric(snp_info.df2$index),
+    min.cov.per.pool = 10,
+    max.cov.per.pool = 150,
+    min.maf = 0.05,
+    return.snp.idx = TRUE,
+    verbose = TRUE
+  )
+
+### Trajectories
+ref_count2 <- Trajectory_genes2@refallele.readcount
+coverage2 <- Trajectory_genes2@readcoverage
+afs2 <- ref_count2/coverage2
+
+afs2 %>%
+  as.data.frame %>%
+  mutate(snp_id = snp_info.df2$snp_id ) ->
+  afs.id2
+
+names(afs.id2) = c(Trajectory_genes2@poolnames, "snp_id")
+
+afs.id2 %>%
+  reshape2::melt(id = "snp_id", variable.name = "sampleId_orig") %>%
+  left_join(samps) %>%
+  separate(remove = F, snp_id,
+           into = c("chr", "pos"),
+           sep = "_") %>%
+  left_join(traits) ->
+  afs.id.annot2
+
+afs.id.annot2$pos = as.numeric(afs.id.annot2$pos)
+
+Weather_Data %>%
+  filter(stat == "prop. max") %>%
+  filter(win == "c(0, 15)") %>%
+  mutate(sampleId_orig = Sample)->
+  T32_data
+
+afs.id.annot2 %>% 
+  left_join(T32_data, by = "sampleId_orig") ->
+  afs.id.annot2.weath
+
+unique(afs.id.annot2.weath$snp_id) -> snps2
+
+corrs = foreach(i= snps2, .combine = "rbind")%do%{
+  
+  afs.id.annot2.weath %>%
+    filter(snp_id == i) -> tmp
+  cor.test(~value.x+ctmin, data = tmp) -> ctmin
+  cor.test(~value.x+value.y, data = tmp) -> t32
+  data.frame(
+    snp_id = i,
+    ctminp = ctmin$p.value,
+    ctminr = ctmin$estimate,
+    t32p = t32$p.value,
+    t32r = t32$estimate
+    
+  )
+}
+
+
+corrs %>%
+  ggplot(aes(
+    x=ctminr,
+    y=t32r,
+  )) +
+  geom_point()  ->
+  ctmin.aft32.corr
+
+ggsave(ctmin.aft32.corr, file = "ctmin.aft32.corr.pdf")
+
+corrs %>%
+  filter(ctminr > 0.65 & t32r < 0.65) -> topR1
+corrs %>%
+  filter(ctminr < 0.65 & t32r > 0.65) -> topR2
+
+afs.id.annot2.weath %>%
+  filter(snp_id %in% "chr3_80328254") %>%
+  filter(value.x > 0 & value.x < 1) %>%
+  ggplot(aes(
+    x= value.x,
+    y= ctmin,
+    fill = value.x,
+    #linetype = city
+  )) + geom_point(shape = 21, size = 3)+ geom_smooth(method = "lm", se = F) +
+  scale_fill_gradient2(midpoint = 0.1, low = "steelblue", high = "firebrick") +
+  xlab("AF") + ylab("CTmin") + theme_bw()->
+  ctmin.cor.plot
+
+ggsave(ctmin.cor.plot, file = "ctmin.cor.plot.pdf", h = 3, w = 4)

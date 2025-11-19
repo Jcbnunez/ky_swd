@@ -70,3 +70,19 @@ java -jar $gowinda \
 
 
 
+### T32 & CTmin
+hits=ctmin.t32.snps.txt
+java -jar $gowinda \
+--snp-file $all_SNPS \
+--candidate-snp-file $hits \
+--gene-set-file $assocGO \
+--annotation-file $SWDgtf \
+--simulations 100000 \
+--min-significance 1 \
+--gene-definition gene \
+--threads 4 \
+--output-file T32Ctmin_gowinda_results.txt \
+--mode gene \
+--min-genes 5 \
+--detailed-log 
+

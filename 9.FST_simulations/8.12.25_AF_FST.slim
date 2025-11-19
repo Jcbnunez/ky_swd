@@ -1,0 +1,291 @@
+// Keywords: fluctuating temperature
+
+initialize() {
+	
+	// Added by Andrew //
+	defineConstant("basename",BaseName);
+	//defineConstant("replicatei", 1); // replicate run
+	//==================//		
+	
+	defineConstant("K", 2100);   // carrying capacity per subpop; the original number was 2100!
+	defineConstant("N", 1);    // number of subpopulations (should be odd to have a true center population)
+	defineConstant("PopSize", 5500);    // This number is used for the MSPRIME VCF importation step. may change if treeseq recording is used.
+	defineConstant("LCh", 100000);    // This number is "L", derived from genomesize in msprime
+	//defineConstant("M", 0.01);   // migration probability
+	defineConstant("R", 2.3);   // mean reproduction (as first parent)in the optimal environmment 
+	defineConstant("Z", 0.0);	  // Optimal growth temperature
+	defineConstant("w", 0.4);    // width of the finess equation
+	defineConstant("wintertemp",wt); // lower is a bigger crash in winter
+	// -0.6 will give a fitness of 0.46
+	// -0.7 will give a fitness of 0.25
+	defineConstant("temp",0.0);
+	defineConstant("burnin", 0);
+	defineGlobal("season", "summer");
+	defineGlobal("x", 0);
+	defineGlobal("y", 0);
+	defineGlobal("years",1); // tracking # of summer/winter cycles completed
+	//defineConstant("rateCC",0.01); // rate of climate change
+	defineConstant("model", "Neutral_Norb" );
+	defineConstant("simID", getSeed());
+	
+	//defineConstant("path", "/Users/jcbnunez/Documents/Research/FlyBottleneck_sims/Neutral_sims/VCF_out" );
+	
+	
+	initializeSLiMModelType("nonWF");
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	m1.convertToSubstitution = T;
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, LCh-1);
+	initializeMutationRate(1e-9);
+	//initializeMutationRate(0);
+	//initializeRecombinationRate(1e-8);
+	initializeRecombinationRate(1.25e-7);
+	
+	//// FOR DEBUGGING ONLY <-------- comment out in live version
+	//// FOR DEBUGGING ONLY <-------- comment out in live version
+	//// FOR DEBUGGING ONLY <-------- comment out in live version
+	//// FOR DEBUGGING ONLY <-------- comment out in live version
+	
+	
+	//defineConstant("path",  '/Users/jcbnunez/Desktop/FluctinFlies_playground/vcfs/' );
+	defineConstant("path_pop", 'test');
+	//defineConstant("base_msprime", '/Users/jcbnunez/Desktop/FluctinFlies_playground/Neutral_100k.vcf');
+	defineConstant("mode", 'seasonal'); // modes are constant or seasonal
+
+}
+
+1 early(){catn("wintertemp: " + wintertemp);}
+
+/// Reproduction
+/// Reproduction
+/// Reproduction
+/// Reproduction
+/// Reproduction
+
+2: reproduction() {
+	// individuals reproduce locally, without dispersal
+	litterSize = rpois(1, R);
+		
+		for (i in seqLen(litterSize)){
+			// generate each offspring with an independently drawn mate
+			mate = subpop.sampleIndividuals(1, exclude=individual);
+			if (mate.size()){
+				subpop.addCrossed(individual, mate);
+			}
+		}
+}
+
+
+/// generations start here
+
+1 early() {
+
+	// create an initial population of 100 individuals, the rest empty
+	for (i in seqLen(N))
+		sim.addSubpop(i, (i == (N-1)/2) ? PopSize else 0) //initial popualation starts in the middle subpop
+		//load data from a vcf		
+		// <----- uncomment for neutral VCF
+		[i].genomes.readFromVCF("/users/a/r/armccrac/suzukii/Neutral_L100K_N500K.vcf", m1);
+	
+	//sim.subpopulations[i].readFromVCF("/Users/jcbnunez/Downloads/Neutral_100k.vcf", m1);
+	
+	for (i in seqLen(N))
+		sim.subpopulations[i].setValue("tempx",temp[i]);
+	
+}
+
+1 late() {
+	// import vcf data from msprime to the population	
+	
+	// set up a log file
+	//log = sim.createLogFile("~/Desktop/sim_log.txt", sep="\t", logInterval=10);
+	//log.addGeneration();
+	//log.addPopulationSize();
+	//log.addMeanSDColumns("size", "sim.subpopulations.individualCount;");
+	//log.addCustomColumn("pop_migrants", "sum(sim.subpopulations.individuals.migrant);");
+	//log.addMeanSDColumns("migrants",
+	//	"sapply(sim.subpopulations, 'sum(applyValue.individuals.migrant);');");
+	season="summer";
+	x=0;
+	y=0;
+}
+
+2: early() {
+	
+	// pre-plan migration of individuals to adjacent subpops
+
+	// post-migration density-dependent selection on each subpop
+	for (subpop in sim.subpopulations[0])
+	{
+		
+		inds = subpop.individuals;
+		
+		// non-overlapping generations; kill off the parental generation
+		ages = inds.age;
+		inds[ages > 0].fitnessScaling = 0.0;
+		inds = inds[ages == 0];
+		
+		juvenileCount = sum(subpop.individuals.age == 0);
+		if(juvenileCount==0) dd=1;
+		if(juvenileCount>0) dd= K / juvenileCount; // dd = density dependence
+		Tpop = subpop.getValue("tempx");
+		nor = (1- ((Tpop- Z)/w)^2)*0.59*exp(0.0633*Tpop); //Norberg equation /// original is 0.0633
+		nor2 = nor + R - 0.59; //HARD CODING. The 0.59 comes from when Tpop=Z in last equation
+		nor3 = nor2;
+		nor3[nor2<0]=0;
+		//print(paste(subpop, juvenileCount, dd, nor3));
+		//print(paste(subpop, dd, nor3));
+		subpop.fitnessScaling = nor3*dd;
+	}
+
+	
+	if(sim.cycle>burnin){
+		
+		// Constant Mode begins here
+		// Constant Mode begins here
+		// Constant Mode begins here
+		// Constant Mode begins here
+		
+		if(mode == "constant"){
+			
+			for (i in seqLen(N))
+				defineGlobal("season", "constant_summer");
+			sim.subpopulations[i].setValue("constant_summer", 0.0);
+		
+		} // Close constant mode
+		
+		// Constant ENDS begins here
+		// Constant ENDS begins here
+		// Constant ENDS begins here
+		// Constant ENDS begins here
+		
+		// <#### ------------------------- #####>
+		
+		// Seasonal Mode begins here
+		// Seasonal Mode begins here
+		// Seasonal Mode begins here
+		// Seasonal Mode begins here
+		
+		if(mode == "seasonal"){
+			
+			catn("Cycle= "+ sim.cycle);
+			
+			catn("X= "+ x);
+			catn("Y= "+ y);
+			
+			///what happens in sims
+			for (i in seqLen(N)){
+				//	print(paste(sim.cycle, season, "x=", x, "y=", y, sim.subpopulations.getValue("tempx"), sim.subpopulations.individualCount));
+				if (x >= 11){
+					/// summer is optimum temperature - lasts 11 generations
+					defineGlobal("season", "winter");
+					defineGlobal("x", 0.0);
+					defineGlobal("y", 0.0);
+
+				}
+				if (y >= 4){
+					/// winter is tempx = wt, lasts 4 generations
+					defineGlobal("season", "summer");
+					defineGlobal("x", 0.0);
+					defineGlobal("y", 0.0);
+					defineGlobal("years", years+1);
+
+				}
+				if (season == "summer"){
+					defineGlobal("x", x+1);;
+					//sim.setValue("x", sim.getValue(x) + 1);			
+					sim.subpopulations[i].setValue("tempx", 0.0);
+					/// summer is optimum temperature - lasts 11 generations
+					/// winter is tempx = -0.6, lasts 4 generations
+				}
+				if (season == "winter"){
+					defineGlobal("y", y+1);
+					//sim.setValue("y", y + 1);	
+					sim.subpopulations[i].setValue("tempx", wintertemp);
+				}
+			}
+		} //// close seasonal loop
+		
+		// Seasonal Mode ends here
+		// Seasonal Mode ends here
+		// Seasonal Mode ends here
+		// Seasonal Mode ends here
+		
+		
+		//print(paste(sim.cycle, season, sim.subpopulations.individualCount, "x=", x, "y=", y, sim.subpopulations.getValue("tempx")));
+		//print(paste(sim.cycle, season, sim.subpopulations.individualCount));
+		
+		//write pop size file	
+		
+		//writeFile(filePath = paste(path_pop, paste("PopSizes" , sim.cycle, mode, wintertemp, model, "txt", sep = ".") , sep = ""), contents = paste(sim.cycle, season, sim.subpopulations.individualCount, x, y, sim.subpopulations.getValue("tempx"),  sep = "\t"), append = T );
+	
+	}
+}
+
+
+1 late() { 
+	
+	fileID = paste0(basename,".txt"); 
+
+	//headers = ("replicatei,sim.cycle,pos,id,freq,wintertemp,season,years,x,y,Np0");
+		
+	defineGlobal("freq_data", c()); // store all rows as strings
+
+
+}
+
+
+//// File recording step
+//// File recording step
+//// File recording step
+
+
+// create output file headers
+
+1:150 late() {
+	
+	// added by Andrew // 
+		
+		//catn("n0= " + size(p0.individuals));
+		Np0 = sim.subpopulations[0].individualCount; 	
+		
+		catn(sim.cycle + " | "
+		+ "season= " + season + " | "
+		+ "y= "+ y + " | "
+		+ "x= "+ x + " | "
+		+ "Np0# "
+		+ Np0 + " | "
+		+ " | years= " + years);	
+		
+		
+		muts = unique(sim.mutations);
+		fileID = paste0(basename,".txt"); 	
+	
+	 for(m in muts){
+        pos  = m.position;
+        id   = m.id;
+        freq = sim.mutationFrequencies(p0, m);
+
+        row_str = paste(c(
+            replicatei,
+            sim.cycle,
+            pos,
+            id,
+            freq,
+            wintertemp,
+            season,
+            years,
+            x,
+            y,
+            Np0
+        ), sep = ",");
+        
+        freq_data = c(freq_data, row_str); // store in memory
+    }	
+    
+    writeFile(fileID, paste(freq_data, sep = "\n"), append=T);
+	
+		
+	//=============//
+
+}
