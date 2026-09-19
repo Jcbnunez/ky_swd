@@ -187,7 +187,7 @@ adapt_inva.clean %>%
     Existing_variation,
     Extra,
     KYseasonal_outlier=seas_lind,
-    NaAme_invasion_outlier=inv_lind,
+    NAme_invasion_outlier=inv_lind,
     Europe_invasion_outlier=invEU_lind
   ) -> adapt_inva.final
 

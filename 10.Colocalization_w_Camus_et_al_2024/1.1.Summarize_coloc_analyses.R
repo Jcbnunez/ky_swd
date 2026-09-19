@@ -19,36 +19,37 @@ library(viridis)
 source("/netfiles/nunezlab/Shared_Resources/Software/baypass_public/utils/baypass_utils.R")
 
 ####
-
+load("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023_BAYPASS_MG/Final_Datasets/C2_BFct_BFT_df.Invsasion_outliers.allAnalyses.Rdata")
+#adapt_inva.final
 
 ####
-adapt_inva.clean %<>%
-  filter(!is.na(seas_lind)) %>%
-  filter(!is.na(invEU_lind)) %>%
-  filter(!is.na(inv_lind)) 
+adapt_inva.final %<>%
+  filter(!is.na(KYseasonal_outlier)) %>%
+  filter(!is.na(Europe_invasion_outlier)) %>%
+  filter(!is.na(NAme_invasion_outlier)) 
 
-all_N = dim(adapt_inva.clean)[1]
+all_N = dim(adapt_inva.final)[1]
 ### define classes
 
 ### First question are adaptive tracking outliers enriched in the top %1 of invasiveness outliers
-adapt_inva.clean %>%
-  filter(seas_lind == TRUE) %>%
-  filter(inv_lind == TRUE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == FALSE) %>%
-  filter(inv_lind == TRUE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == FALSE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == TRUE) %>%
-  filter(inv_lind == FALSE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == FALSE) %>%
-  filter(inv_lind == FALSE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == FALSE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -62,24 +63,24 @@ Matrix <-
 fisher.test(Matrix) -> fet.AdapTrack.InvasiAME
 
 #### Inasiveness and CTmin?
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin >= 15) %>%
-  filter(inv_lind == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin < 15) %>%
-  filter(inv_lind == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin >= 15) %>%
-  filter(inv_lind == FALSE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin < 15) %>%
-  filter(inv_lind == FALSE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -93,24 +94,24 @@ Matrix <-
 fisher.test(Matrix) -> fet.CTmin.InvasiAME
 
 ### invasiveness and t32
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 >= 15) %>%
-  filter(inv_lind == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 < 15) %>%
-  filter(inv_lind == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 >= 15) %>%
-  filter(inv_lind == FALSE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 < 15) %>%
-  filter(inv_lind == FALSE) %>%
+  filter(NAme_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -128,24 +129,24 @@ fisher.test(Matrix) -> fet.T32.InvasiAME
 #### Europe?
 #### Europe?
 #### Europe?
-adapt_inva.clean %>%
-  filter(seas_lind == TRUE) %>%
-  filter(invEU_lind == TRUE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == FALSE) %>%
-  filter(invEU_lind == TRUE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == FALSE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == TRUE) %>%
-  filter(invEU_lind == FALSE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
-  filter(seas_lind == FALSE) %>%
-  filter(invEU_lind == FALSE) %>%
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == FALSE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -159,24 +160,24 @@ Matrix <-
 fisher.test(Matrix) -> fet.AdapTrack.InvasiEU
 
 #### Inasiveness and CTmin?
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin >= 15) %>%
-  filter(invEU_lind == TRUE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin < 15) %>%
-  filter(invEU_lind == TRUE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin >= 15) %>%
-  filter(invEU_lind == FALSE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_ctmin < 15) %>%
-  filter(invEU_lind == FALSE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -190,24 +191,24 @@ Matrix <-
 fisher.test(Matrix) -> fet.CTmin.InvasiEU
 
 ### invasiveness and t32
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 >= 15) %>%
-  filter(invEU_lind == TRUE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> CLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 < 15) %>%
-  filter(invEU_lind == TRUE) %>%
+  filter(Europe_invasion_outlier == TRUE) %>%
   dim(.) %>% .[1] -> noCLASS_OUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 >= 15) %>%
-  filter(invEU_lind == FALSE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> CLASS_noOUTLIER
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(BF_T32 < 15) %>%
-  filter(invEU_lind == FALSE) %>%
+  filter(Europe_invasion_outlier == FALSE) %>%
   dim(.) %>% .[1] -> noCLASS_noOUTLIER
 
 CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
@@ -219,6 +220,7 @@ Matrix <-
          nrow = 2)
 
 fisher.test(Matrix) -> fet.T32.InvasiEU
+
 
 #### MErge!!!
 #### MErge!!!
@@ -277,30 +279,15 @@ All_FETs =
     )
   )
 
+### object All_FETs
 
-All_FETs %>%
-  ggplot(
-    aes(
-      x=Test,
-      y=log2(OR),
-      ymin=log2(lci),
-      ymax=log2(uci),
-      shape=Continent
-    )
-  ) + 
-  geom_hline(yintercept = 0, linetype= "dashed") +
-  geom_errorbar(width = 0.5, position=position_dodge(width=0.5)) +
-  geom_point(size = 4, fill = "grey", position=position_dodge(width=0.5)) +
-  theme_classic() + scale_shape_manual(values = 21:22) ->
-  ORFET_plot
-
-ggsave(ORFET_plot, file = "ORFET_plot.pdf", w=4.3, h = 4)
+### Part 2 --- candidates
 
 ### find a candidate
 #(seas_lind == TRUE) 
 #(inv_lind == TRUE) 
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(seas_lind == TRUE) %>%
   filter(inv_lind == TRUE) %>%
   filter(Gene %in% c(108005504))
@@ -523,102 +510,6 @@ ggplot(data = world) +
   ) -> SAMP.AFs.map
 ggsave(SAMP.AFs.map, file = "SAMP.AFs.map.pdf", h = 4, w = 5)
 
-##### FINAL PCA
-##### FINAL PCA
-##### FINAL PCA
-##### FINAL PCA
-##### FINAL PCA
-#(seas_lind == TRUE) 
-#(inv_lind == TRUE) 
-
-adapt_inva.clean %>%
-  #filter(!is.na(freq_in_KY)) %>%
-  #filter(!is.na(freq_in_INV)) %>%
-  filter(inv_lind == TRUE & seas_lind == TRUE ) ->
-  top_T32_invas_any
-
-#7412539
-#17594956
-
-snp_info %>% 
-  filter(snp_id %in% 
-           c(
-             top_T32_invas_any$SNP_id)
-  ) %>%
-  mutate(rs.id = rownames(.)) %>%
-  separate(remove = F, rs.id, into = c("feat", "index"),
-           sep = "s") ->
-  snp_info.df.finalPCA
-
-samps %>%
-  separate(Collection_date, remove = F,
-           into = c("y","m","d"),
-           sep = "\\-") %>%
-  mutate(m = as.numeric(m)) ->
-  samps.mod
-
-samps.mod %>% filter(continent %in%
-                       c("Asia","Europe","North_America")
-) %>% 
-  .$sampleId_orig -> select_samps
-
-# 17514 SNPs ...
-Trajectory_genes_FINAL <-
-  pooldata.subset(
-    all_dat,
-    pool.index = which(samps$sampleId_orig %in% select_samps),
-    snp.index = as.numeric(snp_info.df.finalPCA$index),
-    #min.cov.per.pool = 10,
-    #max.cov.per.pool = 150,
-    #min.maf = 0.05,
-    return.snp.idx = TRUE,
-    verbose = TRUE
-  )
-
-set.seed(1000)
-pca_result.final <- randomallele.pca(Trajectory_genes_FINAL, scale = TRUE)
-#pca_result.final$perc.var
-#[1] 4.7813663 
-#[2] 3.8720960
-
-pca_result.final$pop.loadings %>% as.data.frame() %>%
-  mutate(sampleId_orig=row.names(.)) %>%
-  left_join(samps.mod) -> pc_loadings
-#full_join(traits) 
-####
-pc_loadings %>%
-  filter(!is.na(m)) %>%
-  mutate(season = case_when(m <= 8 ~ "spring",
-                            m > 8 ~ "fall")) %>%
-  ggplot(aes(
-    x=V1,
-    y=V2,
-    shape=Range, fill =m, label = sampleId_orig
-    #shape=Range, fill =season, label = sampleId_orig
-  )) + geom_point(size = 3) + geom_text(size = 0.5) +
-  scale_shape_manual(values = 21:23) +
-  scale_fill_gradient2(low = "springgreen", 
-                       high = "firebrick", 
-                       midpoint = 8.0) +
-  theme_bw() ->
-  PCA_plot
-ggsave(PCA_plot, file = "PCA.FINAL.pdf", w = 4.8, h =4)
-
-###
-pc_loadings %>%
-  filter(continent == "North_America") %>%
-  filter(!is.na(m)) %>%
-  mutate(season = case_when(m <= 8 ~ "spring",
-                            m > 8 ~ "fall")) %>%
-  ggplot(aes(
-    x=season,
-    y=V2
-  )) + geom_boxplot() +
-  theme_bw() ->
-  V2_plot
-ggsave(V2_plot, file = "V2_plot.pdf", w = 4.8, h =4)
-
-
 ### extra
 ### extra
 ### extra
@@ -635,7 +526,7 @@ ggsave(V2_plot, file = "V2_plot.pdf", w = 4.8, h =4)
 ### extra
 ### extra
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(seas_lind == TRUE ) ->
   seasonal_SNPs
 
@@ -718,7 +609,7 @@ ggsave(V1.ky._plot, file = "V1.ky._plot.pdf", w = 4.8, h =4)
 #### inversion
 #### inversion
 
-adapt_inva.clean %>%
+adapt_inva.final %>%
   filter(chr == "chr2R")  ->
   adapt_inva_Sanja.2R
 
