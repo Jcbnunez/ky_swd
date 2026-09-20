@@ -279,20 +279,14 @@ All_FETs =
     )
   )
 
-### object All_FETs
+### object ***. All_FETs
 
-### Part 2 --- candidates
-
-### find a candidate
-#(seas_lind == TRUE) 
-#(inv_lind == TRUE) 
-
-adapt_inva.final %>%
-  filter(seas_lind == TRUE) %>%
-  filter(inv_lind == TRUE) %>%
-  filter(Gene %in% c(108005504))
-#chrX_17192750
-#chrX_17192811
+##### Part2
+##### FINAL PCA
+##### FINAL PCA
+##### FINAL PCA
+##### FINAL PCA
+##### FINAL PCA
 
 ##### Tracking analysis
 samps <- fread("/netfiles/nunezlab/D_suzukii_resources/Datasets/KY_2020_2023_BAYPASS_MG/2024_Joaquin_KY/swd.metadata.txt")
@@ -315,12 +309,85 @@ Weather_Data %>%
   filter(variable == "T2M") %>%
   filter(stat == "prop. max") -> t32dat
 
+#(seas_lind == TRUE) 
+#(inv_lind == TRUE) 
+
+adapt_inva.final %>%
+  filter(KYseasonal_outlier == TRUE & NAme_invasion_outlier == TRUE ) ->
+  Seas_Invasion_invas_SNPs
+
 snp_info %>% 
   filter(snp_id %in% 
            c(
-             "chrX_17192811", "chrX_17192750",
-             "chrX_17192776","chrX_17192781",
-             "chrX_17192803")
+             Seas_Invasion_invas_SNPs$SNP_id)
+  ) %>%
+  mutate(rs.id = rownames(.)) %>%
+  separate(remove = F, rs.id, into = c("feat", "index"),
+           sep = "s") ->
+  snp_info.df.finalPCA
+
+samps %>%
+  separate(Collection_date, remove = F,
+           into = c("y","m","d"),
+           sep = "\\-") %>%
+  mutate(m = as.numeric(m)) ->
+  samps.mod
+
+samps.mod %>% filter(continent %in%
+                       c("Asia","Europe","North_America")
+) %>% 
+  .$sampleId_orig -> select_samps
+
+# 17514 SNPs ...
+Trajectory_genes_FINAL <-
+  pooldata.subset(
+    all_dat,
+    pool.index = which(samps$sampleId_orig %in% select_samps),
+    snp.index = as.numeric(snp_info.df.finalPCA$index),
+    return.snp.idx = TRUE,
+    verbose = TRUE
+  )
+
+set.seed(1000)
+pca_result.final <- randomallele.pca(Trajectory_genes_FINAL, scale = TRUE)
+#pca_result.final$perc.var
+#[1] 4.7813663 
+#[2] 3.8720960
+
+pca_result.final$pop.loadings %>% as.data.frame() %>%
+  mutate(sampleId_orig=row.names(.)) %>%
+  left_join(samps.mod) -> pc_loadings
+
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+### Part 3 --- candidates
+
+### find a candidate
+#(seas_lind == TRUE) 
+#(inv_lind == TRUE) 
+
+adapt_inva.final %>%
+  filter(C2_AM > 4 & P_C2 > 4) %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
+  mutate(joint_score = C2_AM+P_C2 ) %>%
+  arrange(-joint_score)
+
+adapt_inva.final %>%
+  filter(C2_AM > 4 & P_C2 > 4) %>%
+  filter(KYseasonal_outlier == TRUE) %>%
+  filter(NAme_invasion_outlier == TRUE) %>%
+  filter(SNP_id %in% c("chrX_16121948")) -> SNP_outlier_info
+
+snp_info %>% 
+  filter(snp_id %in% 
+           c(
+             "chrX_16121948")
   ) %>%
   mutate(rs.id = rownames(.)) %>%
   separate(remove = F, rs.id, into = c("feat", "index"),
@@ -362,95 +429,6 @@ afs.id %>%
   afs.id.annot
 
 afs.id.annot$pos = as.numeric(afs.id.annot$pos)
-
-afs.id.annot %>%
-  group_by(snp_id, 
-           city, 
-           year, 
-           Time.point,
-           #Collection_date
-  ) %>%
-  summarize(AFm = ci(value, na.rm = T)[1],
-            AFlci= ci(value, na.rm = T)[2],
-            AFuci= ci(value, na.rm = T)[3],
-            mT32=mean(T32), mCTmin = mean(ctmin) ) ->
-  plot_freq_data
-
-plot_freq_data %>%
-  mutate(numTim = case_when(
-    Time.point == "First" ~ 1+(year-2020)* 3,
-    Time.point == "Second" ~ 2+(year-2020)* 3,
-    Time.point == "Third" ~ 3+(year-2020)* 3)
-  ) %>%
-  ggplot(aes(
-    x=as.numeric(numTim),
-    y=AFm,
-    group=city,
-    #ymin = AFlci, ymax = AFuci,
-    #shape = as.character(year)
-  )) + 
-  geom_line() +
-  #geom_errorbar(width = 0.2) +
-  geom_point(aes(color = mT32, 
-                 #shape=as.character(year)
-  ),  size = 3, alpha = 0.95
-  ) + 
-  scale_color_gradient2(low = "blue", 
-                        high = "red", 
-                        midpoint = 0.25) +
-  scale_shape_manual(values = 21:24) +
-  scale_x_continuous(breaks = 1:12) + 
-  ylim(0.00,1.0) + facet_grid(city~snp_id) +
-  theme_bw()->
-  ctmin_traj
-ggsave(ctmin_traj, file = "ctmin_traj.pdf", w = 6.5, h = 6.0)
-
-
-
-
-### with ctmin as y axis
-afs.id.annot %>%
-  group_by(snp_id, 
-           city, 
-           #year, 
-           Time.point,
-           #Collection_date
-  ) %>%
-  summarize(ctminm = ci(ctmin, na.rm = T)[1],
-            ctminlci= ci(ctmin, na.rm = T)[2],
-            ctminuci= ci(ctmin, na.rm = T)[3],
-            mT32=mean(T32), AFm = mean(value) ) ->
-  plot_freq_data_ctmin
-
-afs.id.annot %>%
-  mutate(numTim = case_when(
-    Time.point == "First" ~ 1,
-    Time.point == "Second" ~ 2,
-    Time.point == "Third" ~ 3)
-  ) %>%
-  ggplot(aes(
-    x=as.factor(numTim),
-    y=ctmin,
-    #ymin = ctminlci, ymax = ctminuci,
-    #shape = city
-    #group = year
-  )) + 
-  #geom_line() +
-  #geom_errorbar(width = 0.2) +
-  #geom_point(aes(color = value, 
-  #               #shape=as.character(year)
-  #),  size = 3
-  #) +
-  geom_boxplot() +
-  scale_color_viridis(option = "A"#, midpoint = 0.7
-  ) +
-  scale_shape_manual(values = 21:24) +
-  #scale_x_continuous(breaks = c(1,2,3)) + 
-  #ylim(0.00,1.0) + 
-  #facet_grid(city~.) +
-  theme_bw()->
-  ctmin_traj2
-ggsave(ctmin_traj2, file = "ctmin_traj2.pdf", w = 3.5, h = 3.0)
 
 
 ### worldwide
@@ -494,159 +472,14 @@ afs.all.id %>%
   ) ->
   plot_freq_data.ALL
 
-world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
-
-ggplot(data = world) +
-  geom_sf(fill= "white") +
-  coord_sf(xlim = c(-160.15, 160.99), ylim = c(-55.00, 69.00), expand = FALSE) + 
-  theme(panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.2), 
-        panel.background = element_rect(fill = "aliceblue")) +
-  geom_point(data = plot_freq_data.ALL, 
-             aes(x= longm, y = latm, fill = AFm, shape = Range), 
-             size = 3) +
-  scale_shape_manual(values = 21:23) +
-  scale_fill_viridis(option = "A"#, midpoint = 0.7
-  ) -> SAMP.AFs.map
-ggsave(SAMP.AFs.map, file = "SAMP.AFs.map.pdf", h = 4, w = 5)
-
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-### extra
-
-adapt_inva.final %>%
-  filter(seas_lind == TRUE ) ->
-  seasonal_SNPs
-
-snp_info %>% 
-  filter(snp_id %in% 
-           c(
-             seasonal_SNPs$SNP_id)
-  ) %>%
-  mutate(rs.id = rownames(.)) %>%
-  separate(remove = F, rs.id, into = c("feat", "index"),
-           sep = "s") ->
-  KY.PCA
-
-samps.mod %>% filter(province %in%
-                       c("Kentucky")
-) %>% filter(fly_type=="wild") %>%
-  .$sampleId_orig -> select_sampsKY
-
-
-# 17514 SNPs ...
-Trajectory_genes_KY <-
-  pooldata.subset(
-    all_dat,
-    pool.index = which(samps$sampleId_orig %in% select_sampsKY),
-    snp.index = as.numeric(KY.PCA$index),
-    return.snp.idx = TRUE,
-    min.cov.per.pool = 10,
-    max.cov.per.pool = 150,
-    min.maf = 0.11,
-    verbose = TRUE
-  )
-
-set.seed(1234)
-pca_result.ky <- randomallele.pca(Trajectory_genes_KY, scale = TRUE)
-
-pca_result.ky$pop.loadings %>% as.data.frame() %>%
-  mutate(sampleId_orig=row.names(.)) %>%
-  left_join(samps.mod) -> ky_pc_loadings
-#full_join(traits) 
-####
-ky_pc_loadings %>%
-  filter(!is.na(m)) %>%
-  mutate(season = case_when(m <= 8 ~ "spring",
-                            m > 8 ~ "fall")) %>%
-  ggplot(aes(
-    x=V1,
-    y=V2,
-    fill =m
-  )) + geom_point(size = 3, shape = 21) + 
-  #scale_shape_manual(values = 21:24) +
-  scale_fill_gradient2(low = "springgreen", 
-                       high = "firebrick", 
-                       midpoint = 8.0) +
-  theme_bw() ->
-  PCA_plot.KY
-ggsave(PCA_plot.KY, file = "PCA.KY.FINAL.pdf", w = 4.9, h =4)
-
-ky_pc_loadings %>%
-  filter(!is.na(m)) %>%
-  mutate(season = case_when(m <= 8 ~ "spring",
-                            m > 8 ~ "fall")) %>%
-  ggplot(aes(
-    x=fct_reorder(as.character(m),m),
-    y=V1,
-    fill = m
-  )) + geom_boxplot() +
-  scale_fill_gradient2(low = "springgreen", 
-                       high = "firebrick", 
-                       midpoint = 8.0) +
-  theme_bw() ->
-  V1.ky._plot
-ggsave(V1.ky._plot, file = "V1.ky._plot.pdf", w = 4.8, h =4)
-
-#### inversion
-#### inversion
-#### inversion
-#### inversion
-#### inversion
-#### inversion
-#### inversion
-#### inversion
-
-adapt_inva.final %>%
-  filter(chr == "chr2R")  ->
-  adapt_inva_Sanja.2R
-
-adapt_inva_Sanja.2R %<>%
-  mutate(inv=case_when(pos > 7412539 & pos < 17594956 ~ "inv",
-                       TRUE ~ "notInv"))
-
-adapt_inva_Sanja.2R %>%
-  filter(BF_T32 >= 15 & inv_lind == TRUE) %>%
-  filter(inv == "inv") %>%
-  dim(.) %>% .[1] -> CLASS_OUTLIER
-
-adapt_inva_Sanja.2R %>%
-  filter(BF_T32 < 15 | inv_lind != TRUE) %>%
-  filter(inv == "inv") %>%
-  dim(.) %>% .[1] -> noCLASS_OUTLIER
-
-adapt_inva_Sanja.2R %>%
-  filter(BF_T32 >= 15 & inv_lind == TRUE) %>%
-  filter(inv != "inv") %>%
-  dim(.) %>% .[1] -> CLASS_noOUTLIER
-
-adapt_inva_Sanja.2R %>%
-  filter(BF_T32 < 15 | inv_lind != TRUE) %>%
-  filter(inv != "inv") %>%
-  dim(.) %>% .[1] -> noCLASS_noOUTLIER
-
-#CLASS_OUTLIER+noCLASS_OUTLIER+CLASS_noOUTLIER+noCLASS_noOUTLIER -> sanChe1
-#sanChe1==all_N
-
-Matrix.Sanja <-
-  matrix(c(CLASS_OUTLIER, noCLASS_OUTLIER, 
-           CLASS_noOUTLIER, noCLASS_noOUTLIER),
-         nrow = 2)
-
-fisher.test(Matrix.Sanja) -> fet.T32.InvasiAME.Matrix.Sanja
-fet.T32.InvasiAME.Matrix.Sanja
+#### save object
+save(All_FETs,
+     pca_result.final,
+     SNP_outlier_info,
+     pc_loadings,
+     afs.id.annot,
+     plot_freq_data.ALL,
+     file = "plots_invasion_seasonality_figure.Rdata")
 
 
 
