@@ -126,7 +126,7 @@ plot_freq_data %>%
                         high = "red", 
                         midpoint = 4.35) +
   scale_shape_manual(values = 21:24) +
-  scale_x_continuous(breaks = 1:12) + 
+  scale_x_continuous(breaks = 1:3) + 
   ylim(0.00,1.0) + facet_grid(~snp_id) +
   theme_bw() + theme(
     legend.position = "inside",

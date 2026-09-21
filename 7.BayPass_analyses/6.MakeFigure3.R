@@ -91,12 +91,14 @@ ggplot() +
              aes(x=FC, y = -log10(padj)),
              color = "grey", alpha = 0.6
   ) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.01), linetype = "dashed") + 
   geom_point(dat = filter(lx28.diff.outliers, 
                             Top1percentC == TRUE,
                           padj < 0.05
   ),
   aes(x=FC, y = -log10(padj)),
-  color = "red", alpha = 0.7
+  color = "#8FBC8F", alpha = 0.7
   ) +
   geom_point(dat = filter(lx28.diff.outliers, 
                           KYseasonal_outlier == TRUE,
@@ -105,14 +107,12 @@ ggplot() +
              fill = "gold", color = "black", 
              alpha = 1.0, shape = 23, size = 3
   ) +
-  geom_vline(xintercept = 0, linetype = "dashed") +
-  geom_hline(yintercept = -log10(0.01), linetype = "dashed") + 
   theme_bw()->
   diffexp.lx.C2_t32
-#ggsave(diffexp.lx.C2_t32, 
-#       file = "diffexp.lx.C2_t32.pdf", 
-#       w = 3, h = 3)
-#
+ggsave(diffexp.lx.C2_t32, 
+       file = "diffexp.lx.C2_t32.pdf", 
+       w = 3, h = 3)
+
 
 plots = (
   PCA_plot.KY + V1.ky._plot + diffexp.lx.C2_t32
