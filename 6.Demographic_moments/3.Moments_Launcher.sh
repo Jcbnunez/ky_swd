@@ -9,9 +9,11 @@
 #SBATCH -p general
 #SBATCH --array=0-67
 
-module load python3.12-anaconda/2024.06-1
-source ${ANACONDA_ROOT}/etc/profile.d/conda.sh
-conda activate moments_jcbn
+#module load python3.12-anaconda/2024.06-1
+#source ${ANACONDA_ROOT}/etc/profile.d/conda.sh
+module load miniforge
+conda activate moments
+
 moment_script=$1
 
   python $moment_script \
