@@ -12,6 +12,8 @@ split_migf <- system("ls split_mig/*_output.migsym.txt", intern = T)
 
 split_migasymf <- system("ls split_migasym/*_output.migasymm.txt", intern = T)
 
+split_nomig<- system("ls split_nomig/*_output.nomig.txt", intern = T)
+
 o1 = foreach(i=nullf, .combine = "rbind")%do%{
   tmp <- fread(i)
   

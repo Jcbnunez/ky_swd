@@ -107,40 +107,30 @@ print("defining functions")
 ##########################################
 # Strict isolation model
 ##########################################
-
 def split_nomig_moments(params, ns, pop_ids=None):
-
     if pop_ids is not None and len(pop_ids) != 2:
         raise ValueError(
             "pop_ids must be a list of two population IDs"
         )
-
     nu1, nu2, T = params
-
     sts = moments.LinearSystem_1D.steady_state_1D(
         ns[0] + ns[1]
     )
-
     fs = moments.Spectrum(sts)
-
     fs = moments.Manips.split_1D_to_2D(
         fs,
         ns[0],
         ns[1]
     )
-
     # no migration after split
     fs.integrate(
         [nu1, nu2],
         T
     )
-
     fs.pop_ids = pop_ids
-
     return fs
-
-
 func_moments = split_nomig_moments
+
 
 ##########################################
 # parameter bounds
@@ -152,12 +142,10 @@ lower_bound = [1e-5, 1e-5, 1e-5]
 print("optimization loop")
 
 for rep in range(iterations):
-
     prior = [
         np.random.uniform(lower_bound[x], upper_bound[x])
         for x in range(3)
     ]
-
     popt = moments.Inference.optimize_log(
         prior,
         fs_folded,
@@ -167,45 +155,33 @@ for rep in range(iterations):
         verbose=False,
         maxiter=100,
     )
-
     params = 3
-
     model = func_moments(popt, ns)
-
     ll_model = moments.Inference.ll_multinom(
         model,
         fs_folded
     )
-
     aic = 2 * params - 2 * ll_model
-
     print(
         "Maximum log composite likelihood: {0}".format(
             ll_model
         )
     )
-
     theta = moments.Inference.optimal_sfs_scaling(
         model,
         fs_folded
     )
-
     Nref = theta / (4 * mu * L)
-
     nu1 = popt[0]
     nu2 = popt[1]
     Ts = popt[2]
-
     divergence_time = 2 * Nref * Ts * g
-
     pop1_size = nu1 * Nref
     pop2_size = nu2 * Nref
-
     PMmod = open(
         'split_nomig/%s_output.nomig.txt' % Pair_name,
         'a'
     )
-
     PMmod.write(
         str(Pair_name) + '\t' +
         str(fs_file) + '\t' +
@@ -221,7 +197,6 @@ for rep in range(iterations):
         str(ll_model) + '\t' +
         str(aic) + '\n'
     )
-
     PMmod.close()
 
 print("Moments finished running")
