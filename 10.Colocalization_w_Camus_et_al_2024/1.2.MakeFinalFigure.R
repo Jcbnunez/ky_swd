@@ -86,6 +86,12 @@ pc_loadings %>%
   PCA_plot
 ggsave(PCA_plot, file = "PCA.FINAL.pdf", w = 4.8, h =4)
 
+### test for PC association
+anova(lm(V1~ Range, data = pc_loadings))
+anova(lm(V2~ m , data = filter(pc_loadings, Range == "Invasive_AME")))
+
+
+
 ###
 ### allele freq plot
 
