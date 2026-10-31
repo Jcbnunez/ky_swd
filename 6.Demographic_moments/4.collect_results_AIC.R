@@ -5,13 +5,11 @@ library(magrittr)
 library(data.table)
 library(reshape2)
 library(foreach)
+library(gmodels)
 
 nullf <- system("ls null/*_output.null.txt", intern = T)
-
 split_migf <- system("ls split_mig/*_output.migsym.txt", intern = T)
-
 split_migasymf <- system("ls split_migasym/*_output.migasymm.txt", intern = T)
-
 split_nomig<- system("ls split_nomig/*_output.nomig.txt", intern = T)
 
 o1 = foreach(i=nullf, .combine = "rbind")%do%{
@@ -38,25 +36,42 @@ o3 = foreach(i=split_migasymf, .combine = "rbind")%do%{
     mutate(model = "split_migasymf")
 }
 
-rbind(o1, o2, o3) ->
+o4 = foreach(i=split_nomig, .combine = "rbind")%do%{
+  tmp <- fread(i)
+  
+  data.table(Pair_name = tmp$Pair_name,
+             AIC = tmp$AIC) %>%
+    mutate(model = "split_nomig")
+}
+
+rbind(o1, o2, o3, o4) ->
   AIC_models
 
 AIC_models %>%
+  group_by(model, Pair_name) %>%
+  slice_min(AIC) %>%
   group_by(model) %>%
   summarise(m = mean(log10(AIC)),
             sd = sd(log10(AIC)))
+
   
 
 AIC_models %>%
   group_by(Pair_name, model) %>%
   slice_min(AIC) %>%
+  group_by(model) %>%
+  summarise(m = ci(log10(AIC))[1],
+            lci = ci(log10(AIC))[2],
+            uci = ci(log10(AIC))[3]
+             ) %>%
   ggplot(aes(
     x=model,
-    y=log10(AIC)
-  )) + geom_boxplot() ->
+    y=m, ymin = lci , ymax= uci
+  )) + geom_point(size = 3) + geom_errorbar(width = 0.2) + 
+  theme_bw() ->
   AICplots
 
-ggsave(AICplots, file = "AICplots.pdf")
+ggsave(AICplots, file = "AICplots.pdf", w= 4, h= 4)
 
 ####
 bets_model = foreach(i=split_migf, .combine = "rbind")%do%{
