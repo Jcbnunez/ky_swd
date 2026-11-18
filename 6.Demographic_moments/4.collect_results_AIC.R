@@ -83,29 +83,37 @@ bets_model2 = foreach(i=split_migasymf, .combine = "rbind")%do%{
   tmp <- fread(i)
   tmp
 }
+
 #divergence_time = 2*Nref*Ts*g
 #Nref= theta/(4*mu*L)
 
 bets_model  %>%
   group_by(Pair_name) %>%
   slice_min(AIC) %>%
-  mutate(Nref2 = theta/(4*2.8e-9*146738399)) %>%
+  mutate(Nref2 = theta/(4*2.8e-9*2.823e8)) %>%
   mutate(divT2 = 2*Nref2*Ts) %>%
   mutate(migR2 = m12/(2*Nref2)) %>%
   mutate(mKY_VA = migR2*(nu1*Nref2),
          mVA_KY = migR2*(nu2*Nref2),
   ) %>%
   mutate(NeKY = nu1*Nref2,
-         NeVA = nu2*Nref2) ->
+         NeVA = nu2*Nref2,
+         DivYears = divT2/16) ->
   updated_Estimates
+
+
+### Plot
+updated_Estimates %>%
+  select()
+  
 
 ###
 updated_Estimates %>%
   ungroup() %>%
-  summarise(max = max(divT2),
-            mean = mean(divT2),
-            med = median(divT2),
-            min = min(divT2))
+  summarise(max = max(DivYears),
+            mean = mean(DivYears),
+            med = median(DivYears),
+            min = min(DivYears))
 
 updated_Estimates %>%
   ungroup() %>%
